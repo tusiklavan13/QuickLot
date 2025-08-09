@@ -3,233 +3,297 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QuickLot – Futures Contracts Calculator</title>
+<title>QuickLot – Futures Size Calculator</title>
 <style>
 :root{
   --bg:#0f1226; --card:#15193a; --card2:#101433; --text:#e9ecff; --muted:#b5b9d9;
   --primary:#6c8dff; --accent:#7ef0d4; --warn:#ffb3b3; --border:#27306a; --btn:#5a77ff;
 }
 *{box-sizing:border-box}
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#0b0e22, #0f1226 40%, #0b0e22);color:var(--text)}
-.container{max-width:820px;margin:24px auto;padding:0 16px}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#0b0e22,#0f1226 40%,#0b0e22);color:var(--text)}
+.container{max-width:860px;margin:24px auto;padding:0 16px}
 h1{font-size:1.5rem;margin:0 0 16px;display:flex;gap:10px;align-items:center}
 .badge{font-size:.75rem;padding:4px 8px;border-radius:999px;background:rgba(126,240,212,.15);color:var(--accent);border:1px solid rgba(126,240,212,.3)}
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 label{display:block;font-weight:600;margin:.5rem 0 .35rem;color:var(--muted)}
 input,select,button{font:inherit;width:100%;padding:.7rem;border:1px solid var(--border);border-radius:12px;background:var(--card2);color:var(--text)}
-select{background-image:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0))}
+select,input{background-image:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0))}
 button{cursor:pointer;font-weight:700;background:var(--btn);border:none}
 button:hover{filter:brightness(1.05)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:640px){.row{grid-template-columns:1fr}}
+@media (max-width:720px){.row{grid-template-columns:1fr}}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .value{font-weight:700}
 .subtle{color:var(--muted);font-size:.9rem}
 .warn{background:rgba(255,179,179,.1);border:1px solid rgba(255,179,179,.4);color:#ffd0d0;padding:10px;border-radius:10px;margin-top:10px}
-.kicker{font-size:.9rem;color:var(--muted);margin:6px 0 0}
 .hr{height:1px;background:var(--border);margin:12px 0}
 .notice{font-size:.85rem;color:var(--muted)}
-header{padding:22px 0 8px}
-footer{opacity:.8;margin:12px 0 30px}
 .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card2);font-size:.8rem}
+.small{font-size:.85rem}
 </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>QuickLot <span class="badge">Futures Size Calculator</span></h1>
-      <div class="subtle">Enter risk & stop (ticks) → get contracts. Shows results <b>before</b> and <b>after</b> commission.</div>
-    </header>
+<div class="container">
+  <h1>QuickLot <span class="badge">Futures Size Calculator</span></h1>
+  <div class="subtle">Enter risk & stop (ticks) → get contracts. Shows results <b>before</b> and <b>after</b> commission.</div>
 
-    <div class="card">
-      <div class="row">
-        <div>
-          <label for="symbol">Symbol</label>
-          <select id="symbol">
-            <option value="MES">MES – Micro S&P 500</option>
-            <option value="MNQ">MNQ – Micro Nasdaq</option>
-            <option value="MYM">MYM – Micro Dow</option>
-            <option value="M2K">M2K – Micro Russell</option>
-            <option value="MGC">MGC – Micro Gold</option>
-            <option value="MCL">MCL – Micro WTI Crude</option>
-            <option value="CUSTOM">Custom…</option>
-          </select>
-        </div>
-        <div>
-          <label for="broker">Broker / Prop</label>
-          <select id="broker">
-            <option value="TopstepX">TopstepX (micros)</option>
-            <option value="GenericLow">Generic Low Fees</option>
-            <option value="GenericStd">Generic Standard</option>
-            <option value="Custom">Custom…</option>
-          </select>
-          <div class="kicker">Changing symbol/broker updates default fee. You can still edit it.</div>
-        </div>
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="symbolInput">Symbol (type to search)</label>
+        <input id="symbolInput" list="symbolList" placeholder="e.g., MNQ, MES, MGC">
+        <datalist id="symbolList"></datalist>
+        <div class="small subtle" id="symbolName"></div>
       </div>
-
-      <div class="row">
-        <div>
-          <label for="risk">Risk per trade ($)</label>
-          <input id="risk" type="number" inputmode="decimal" placeholder="e.g. 300">
-        </div>
-        <div>
-          <label for="stopTicks">Stop loss (ticks)</label>
-          <input id="stopTicks" type="number" inputmode="numeric" placeholder="e.g. 30">
-        </div>
+      <div>
+        <label for="broker">Broker / Prop</label>
+        <select id="broker">
+          <option value="TopstepX">TopstepX</option>
+          <option value="Tradovate">Tradovate</option>
+          <option value="Rithmic">Rithmic</option>
+          <option value="Plus500">Plus500 (T4)</option>
+          <option value="Custom">Custom…</option>
+        </select>
+        <div class="small subtle">Changing symbol/broker auto-fills fee. You can override it.</div>
       </div>
-
-      <div class="row">
-        <div>
-          <label for="fee">Fee per contract ($)</label>
-          <input id="fee" type="number" inputmode="decimal" step="0.01" placeholder="Auto-filled">
-        </div>
-        <div id="customBox" style="display:none">
-          <label for="customTickValue">Custom Tick Value ($)</label>
-          <input id="customTickValue" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.50">
-        </div>
-      </div>
-
-      <button id="calcBtn">Calculate</button>
-      <div id="msg" class="warn" style="display:none"></div>
     </div>
 
-    <div class="card">
-      <div class="grid">
-        <div class="pill">Tick value</div><div class="value" id="tickValue">$0.50 / tick</div>
-        <div>Risk <b>per contract (before fees)</b>:</div><div class="value" id="rpcBefore">$0.00</div>
-        <div>Risk <b>per contract (after fees)</b>:</div><div class="value" id="rpcAfter">$0.00</div>
+    <div class="row">
+      <div>
+        <label for="risk">Risk per trade ($)</label>
+        <input id="risk" type="number" inputmode="decimal" placeholder="e.g. 300">
       </div>
-      <div class="hr"></div>
-      <div class="grid">
-        <div>Contracts (rounded down):</div><div class="value" id="contracts">0</div>
-        <div>Total risk <b>before fees</b>:</div><div class="value" id="totalBefore">$0.00</div>
-        <div>Total risk <b>after fees</b>:</div><div class="value" id="totalAfter">$0.00</div>
+      <div>
+        <label for="stopTicks">Stop loss (ticks)</label>
+        <input id="stopTicks" type="number" inputmode="numeric" placeholder="e.g. 30">
       </div>
-      <div class="hr"></div>
-      <div class="grid">
-        <div>1R (after fees):</div><div class="value" id="r1">$0.00</div>
-        <div>2R (after fees):</div><div class="value" id="r2">$0.00</div>
-        <div>3R (after fees):</div><div class="value" id="r3">$0.00</div>
-        <div>4R (after fees):</div><div class="value" id="r4">$0.00</div>
-        <div>5R (after fees):</div><div class="value" id="r5">$0.00</div>
-      </div>
-      <p class="notice">Sizing uses the <b>after-fees</b> risk per contract. Both views are shown for clarity.</p>
     </div>
 
-    <footer class="subtle">For calculation purposes only. No financial advice.</footer>
+    <div class="row">
+      <div>
+        <label for="fee">Fee per contract ($) – round-turn</label>
+        <input id="fee" type="number" inputmode="decimal" step="0.01" placeholder="Auto-filled">
+      </div>
+      <div id="customTickBox" style="display:none">
+        <label for="customTickValue">Custom Tick Value ($)</label>
+        <input id="customTickValue" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.50">
+      </div>
+    </div>
+
+    <button id="calcBtn">Calculate</button>
+    <div id="msg" class="warn" style="display:none"></div>
   </div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="pill">Tick value</div><div class="value" id="tickValue">$0.50 / tick</div>
+      <div>Risk <b>per contract (before fees)</b>:</div><div class="value" id="rpcBefore">$0.00</div>
+      <div>Risk <b>per contract (after fees)</b>:</div><div class="value" id="rpcAfter">$0.00</div>
+    </div>
+    <div class="hr"></div>
+    <div class="grid">
+      <div>Contracts (rounded down):</div><div class="value" id="contracts">0</div>
+      <div>Total risk <b>before fees</b>:</div><div class="value" id="totalBefore">$0.00</div>
+      <div>Total risk <b>after fees</b>:</div><div class="value" id="totalAfter">$0.00</div>
+    </div>
+    <div class="hr"></div>
+    <div class="grid">
+      <div>1R (after fees):</div><div class="value" id="r1">$0.00</div>
+      <div>2R (after fees):</div><div class="value" id="r2">$0.00</div>
+      <div>3R (after fees):</div><div class="value" id="r3">$0.00</div>
+      <div>4R (after fees):</div><div class="value" id="r4">$0.00</div>
+      <div>5R (after fees):</div><div class="value" id="r5">$0.00</div>
+    </div>
+    <p class="notice">Sizing uses the <b>after-fees</b> risk per contract. Both views are shown for clarity.</p>
+  </div>
+
+  <div class="subtle small">Fees source: Topstep Help Center (updated May 12, 2025). Figures are round-turn. Always verify current fees with your provider.</div>
+</div>
 
 <script>
 (function(){
-  // === Symbol specs (tick value). tickSize included if later you want points→ticks.
+  // --- Core symbol specs: tick values (USD per tick). Add more if needed.
+  // Names are for display/search.
   const SYMBOLS = {
-    MES:{tickValue:1.25, tickSize:0.25},
-    MNQ:{tickValue:0.50, tickSize:0.25},
-    MYM:{tickValue:0.50, tickSize:1.00},
-    M2K:{tickValue:0.50, tickSize:0.10},
-    MGC:{tickValue:1.00, tickSize:0.10},
-    MCL:{tickValue:1.00, tickSize:0.01}
+    // CME Equity
+    ES:{name:"E-mini S&P 500", tv:12.50},   // not in UI by default but fee table supports it
+    MES:{name:"Micro E-mini S&P 500", tv:1.25},
+    NQ:{name:"E-mini Nasdaq-100", tv:5.00},
+    MNQ:{name:"Micro E-mini Nasdaq-100", tv:0.50},
+    RTY:{name:"E-mini Russell 2000", tv:5.00},
+    M2K:{name:"Micro E-mini Russell 2000", tv:0.50},
+    YM:{name:"Mini Dow", tv:5.00},
+    MYM:{name:"Micro Mini Dow", tv:0.50},
+    NKD:{name:"Nikkei 225 (USD)", tv:5.00},
+    MBT:{name:"Micro E-mini Bitcoin", tv:0.50},
+    MET:{name:"Micro E-mini Ether", tv:0.50},
+
+    // NYMEX / Energy & Metals subset
+    CL:{name:"Crude Oil", tv:10.00},
+    MCL:{name:"Micro Crude Oil", tv:1.00},
+    QM:{name:"E-mini Crude Oil", tv:12.50},
+    NG:{name:"Henry Hub Natural Gas", tv:10.00},
+    QG:{name:"E-mini Natural Gas", tv:12.50},
+    MNG:{name:"Micro Henry Hub Natural Gas", tv:1.00},
+    RB:{name:"RBOB Gasoline", tv:4.20},
+    HO:{name:"Heating Oil", tv:4.20},
+    PL:{name:"Platinum", tv:5.00},
+
+    // COMEX
+    GC:{name:"Gold", tv:10.00},
+    MGC:{name:"Micro Gold", tv:1.00},
+    SI:{name:"Silver", tv:5.00},
+    SIL:{name:"Micro Silver", tv:1.00},
+    HG:{name:"Copper", tv:12.50},
+    MHG:{name:"Micro Copper", tv:1.25},
+
+    // CBOT Financials
+    ZT:{name:"2-Year Note", tv:15.625}, ZF:{name:"5-Year Note", tv:7.8125},
+    ZN:{name:"10-Year Note", tv:15.625}, ZB:{name:"30-Year Bond", tv:31.25},
+    UB:{name:"Ultra T-Bond", tv:31.25}, TN:{name:"Ultra 10-Year Note", tv:31.25},
+
+    // CBOT Ags
+    ZC:{name:"Corn", tv:12.50}, ZW:{name:"Wheat", tv:12.50}, ZS:{name:"Soybeans", tv:12.50},
+    ZM:{name:"Soybean Meal", tv:10.00}, ZL:{name:"Soybean Oil", tv:6.00},
+
+    // CME FX
+    "6A":{name:"Australian Dollar", tv:6.25}, "M6A":{name:"Micro AUD/USD", tv:1.00},
+    "6B":{name:"British Pound", tv:6.25}, "M6B":{name:"Micro GBP/USD", tv:1.00},
+    "6C":{name:"Canadian Dollar", tv:10.00},
+    "6E":{name:"Euro FX", tv:12.50}, "M6E":{name:"Micro EUR/USD", tv:1.25},
+    "6J":{name:"Japanese Yen", tv:12.50}, "6S":{name:"Swiss Franc", tv:12.50},
+    "6M":{name:"Mexican Peso", tv:5.00}, "6N":{name:"New Zealand Dollar", tv:10.00},
+
+    // Livestock
+    LE:{name:"Live Cattle", tv:10.00}, HE:{name:"Lean Hogs", tv:10.00}
   };
 
-  // === Fee schedules per Broker/Prop (defaults; user may override in the Fee field)
+  // --- Fees (round-turn) per broker/prop and symbol (from Topstep Help article).
   const FEES = {
-    TopstepX: {  // example defaults (edit to your reality)
-      MES:0.74, MNQ:0.74, MYM:0.74, M2K:0.74, MGC:1.24, MCL:0.90
+    TopstepX:{
+      ES:2.80, MES:0.74, NQ:2.80, MNQ:0.74, RTY:2.80, M2K:0.74, NKD:4.34, MBT:2.34, MET:0.24,
+      CL:3.04, MCL:1.04, QM:2.44, PL:3.24, QG:1.04, RB:3.04, HO:3.04, NG:3.20, MNG:1.24,
+      YM:2.80, MYM:0.74,
+      "6A":3.24, M6A:0.52, "6B":3.24, "6C":3.24, "6E":3.24, M6E:0.52, "6J":3.24, "6S":3.24,
+      E7:1.74, "6M":3.24, "6N":3.24, M6B:0.52,
+      ZT:1.34, ZF:1.34, ZN:1.60, ZB:1.78, UB:1.94, TN:1.64,
+      GC:3.24, MGC:1.24, SI:3.24, SIL:2.04, HG:3.24, MHG:1.24,
+      HE:4.24, LE:4.24, ZC:4.30, ZW:4.30, ZS:4.30, ZM:4.30, ZL:4.30
     },
-    GenericLow:{
-      MES:0.59, MNQ:0.59, MYM:0.59, M2K:0.59, MGC:0.99, MCL:0.79
+    Tradovate:{
+      ES:4.28, MES:1.34, NKD:5.82, NQ:4.28, MNQ:1.34, RTY:4.28, M2K:1.34, MBT:5.64, MET:0.84,
+      "6A":4.72, M6A:2.20, "6B":4.72, "6C":4.72, "6E":4.72, M6E:1.12, "6J":4.72, "6S":4.72,
+      E7:3.22, "6M":4.72, "6N":4.72, M6B:1.12,
+      LE:5.72, HE:5.72,
+      CL:4.52, MCL:1.64, QM:3.92, NG:4.72, PL:4.72, QG:2.52, RB:4.52, HO:4.52, MNG:2.32,
+      ZC:5.72, ZW:5.72, ZS:5.72, ZM:5.72, ZL:5.72,
+      YM:4.28, MYM:1.34,
+      GC:4.72, MGC:1.64, SI:4.72, SIL:2.64, HG:4.72, MHG:1.08
     },
-    GenericStd:{
-      MES:0.90, MNQ:0.90, MYM:0.90, M2K:0.90, MGC:1.40, MCL:1.10
+    Rithmic:{
+      ES:4.36, MES:1.42, NKD:5.90, NQ:4.36, MNQ:1.42, RTY:4.36, M2K:1.42, MBT:5.72, MET:0.92,
+      "6A":4.80, M6A:1.20, "6B":4.80, "6C":4.80, "6E":4.80, M6E:1.20, "6J":4.80, "6S":4.80,
+      E7:3.30, "6M":4.80, "6N":4.80, M6B:1.20,
+      LE:5.80, HE:5.80,
+      CL:4.60, MCL:1.72, QM:4.00, NG:4.80, PL:4.80, QG:2.60, RB:4.60, HO:4.60, MNG:1.92,
+      ZC:5.80, ZW:5.80, ZS:5.80, ZM:5.80, ZL:5.80,
+      YM:4.36, MYM:1.42,
+      GC:4.80, MGC:1.72, SI:4.80, SIL:2.72, HG:4.80, MHG:1.92
+    },
+    Plus500:{
+      ES:4.80, MES:null, NKD:6.34, NQ:4.80, MNQ:null, RTY:4.80, M2K:null, MBT:null, MET:null,
+      "6A":5.24, M6A:null, "6B":5.24, "6C":5.24, "6E":5.24, M6E:null, "6J":5.24, "6S":5.24, E7:3.74,
+      "6M":5.24, "6N":5.24,
+      LE:6.24, HE:6.24,
+      CL:5.04, MCL:null, QM:4.44, NG:5.24, QG:3.04, PL:5.24, RB:5.04,
+      ZC:6.30, ZW:6.30, ZS:6.30, ZM:6.30, ZL:6.30,
+      YM:4.80, MYM:null,
+      GC:5.24, MGC:null, SI:5.24, SIL:null, HG:5.24
     }
-    // Custom: user will type Fee manually
   };
 
+  // Build the searchable list from SYMBOLS keys
   const $ = id => document.getElementById(id);
   const fmt$ = v => isFinite(v)?('$'+v.toFixed(2)):'$0.00';
 
-  function currentTickValue(){
-    const s = $('symbol').value;
-    if(s==='CUSTOM'){
-      const v = parseFloat($('customTickValue').value);
-      return (v>0)? v : NaN;
-    }
-    return SYMBOLS[s].tickValue;
+  const list = $('symbolList');
+  for(const [code, info] of Object.entries(SYMBOLS)){
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.label = `${code} — ${info.name}`;
+    list.appendChild(opt);
   }
+  // Default symbol
+  $('symbolInput').value = 'MNQ';
+  updateSymbolMeta();
 
-  function autoFillFee(){
-    const s = $('symbol').value;
-    const b = $('broker').value;
-    if(b==='Custom'){ return; } // don't override user
-    if(s==='CUSTOM'){ return; } // can't map fees for unknown symbol
-    const schedule = FEES[b];
-    if(schedule && typeof schedule[s]==='number'){
-      $('fee').value = schedule[s].toString();
-    }
-  }
+  $('symbolInput').addEventListener('input', updateSymbolMeta);
+  $('broker').addEventListener('change', autoFillFee);
+  $('calcBtn').addEventListener('click', calculate);
 
-  function updateTickLabel(){
-    const s = $('symbol').value;
-    if(s==='CUSTOM'){
-      $('tickValue').textContent = 'Custom';
-    } else {
-      $('tickValue').textContent = fmt$(SYMBOLS[s].tickValue) + ' / tick';
-    }
-  }
-
-  function setSymbolDefaults(){
-    const s = $('symbol').value;
-    $('customBox').style.display = (s==='CUSTOM') ? 'block' : 'none';
-    updateTickLabel();
+  function updateSymbolMeta(){
+    const code = getSymbol();
+    const info = SYMBOLS[code];
+    $('symbolName').textContent = info ? info.name : '';
+    $('tickValue').textContent = info ? fmt$(info.tv)+' / tick' : '—';
+    // If symbol unknown → allow custom tick value field
+    $('customTickBox').style.display = info ? 'none' : 'block';
     autoFillFee();
   }
 
-  $('symbol').addEventListener('change', setSymbolDefaults);
-  $('broker').addEventListener('change', autoFillFee);
+  function getSymbol(){
+    return ($('symbolInput').value || '').trim().toUpperCase();
+  }
 
-  // initial defaults
-  setSymbolDefaults();
+  function autoFillFee(){
+    const sym = getSymbol();
+    const broker = $('broker').value;
+    if(broker==='Custom'){ return; }
+    const sch = FEES[broker];
+    if(!sch){ return; }
+    const fee = sch.hasOwnProperty(sym) ? sch[sym] : null;
+    if(fee==null || isNaN(fee)){ // unsupported by that broker
+      $('fee').value = '';
+      $('fee').placeholder = 'Unavailable for this broker/symbol';
+    }else{
+      $('fee').value = fee.toString();
+    }
+  }
 
-  $('calcBtn').addEventListener('click', ()=>{
+  function currentTickValue(){
+    const sym = getSymbol();
+    if(SYMBOLS[sym]) return SYMBOLS[sym].tv;
+    const v = parseFloat($('customTickValue').value);
+    return (v>0)? v : NaN;
+  }
+
+  function calculate(){
     $('msg').style.display='none';
-
     const tickVal = currentTickValue();
-    const risk    = parseFloat($('risk').value);
-    const stopT   = parseFloat($('stopTicks').value);
-    const fee     = parseFloat($('fee').value);
+    const risk = parseFloat($('risk').value);
+    const stopT = parseFloat($('stopTicks').value);
+    const fee = parseFloat($('fee').value);
 
     if(!(risk>0) || !(stopT>0) || !(fee>=0) || !(tickVal>0)){
       show('Please enter: risk > 0, stop ticks > 0, fee ≥ 0, and a valid tick value.');
       return;
     }
-
-    // per-contract risk BEFORE fees and AFTER fees
-    const rpcBefore = stopT * tickVal;          // before commission
-    const rpcAfter  = stopT * tickVal + fee;    // after commission
-
-    // contracts are constrained by AFTER-fees risk per contract (more conservative & realistic)
+    const rpcBefore = stopT * tickVal;       // before commission
+    const rpcAfter  = stopT * tickVal + fee; // after commission
     const contracts = Math.floor(risk / rpcAfter);
-
-    // totals
     const totalBefore = contracts * rpcBefore;
     const totalAfter  = contracts * rpcAfter;
 
-    // write to UI
     $('rpcBefore').textContent = fmt$(rpcBefore);
     $('rpcAfter').textContent  = fmt$(rpcAfter);
     $('contracts').textContent = contracts;
     $('totalBefore').textContent = fmt$(totalBefore);
     $('totalAfter').textContent  = fmt$(totalAfter);
 
-    // R multiples are based on AFTER-fees total risk
-    for(let n=1;n<=5;n++){
-      $('r'+n).textContent = fmt$(totalAfter * n);
-    }
+    for(let n=1;n<=5;n++) $('r'+n).textContent = fmt$(totalAfter*n);
 
-    if(contracts < 1){
-      show('Increase risk or decrease stop to get at least 1 contract (after-fees sizing).');
-    }
-  });
+    if(contracts<1) show('Increase risk or decrease stop to get at least 1 contract (after-fees sizing).');
+  }
 
   function show(txt){
     $('msg').textContent = txt;
