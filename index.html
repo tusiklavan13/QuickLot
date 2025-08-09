@@ -10,10 +10,6 @@
   --primary:#6c8dff; --accent:#7ef0d4; --warn:#ffb3b3; --border:#27306a; --btn:#5a77ff;
 }
 *{box-sizing:border-box}
-  #favBtn{min-width:42px;border-radius:10px}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card2);cursor:pointer}
-.chip .x{opacity:.7;font-weight:700}
-.chip:hover{filter:brightness(1.06)}
 body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#0b0e22,#0f1226 40%,#0b0e22);color:var(--text)}
 .container{max-width:860px;margin:24px auto;padding:0 16px}
 h1{font-size:1.5rem;margin:0 0 16px;display:flex;gap:10px;align-items:center}
@@ -33,6 +29,15 @@ button:hover{filter:brightness(1.05)}
 .hr{height:1px;background:var(--border);margin:12px 0}
 .notice{font-size:.85rem;color:var(--muted)}
 .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card2);font-size:.8rem}
+
+/* favorites UI */
+#symbolRow{display:flex; gap:8px; align-items:center}
+#symbolInput{flex:1}
+#favBtn{width:38px; height:38px; border-radius:8px; font-size:18px; line-height:1; background:var(--card2); border:1px solid var(--border)}
+#favBtn:hover{filter:brightness(1.06)}
+#favChips{margin-top:8px; display:flex; flex-wrap:wrap; gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card2);cursor:pointer}
+.chip:hover{filter:brightness(1.06)}
 .small{font-size:.85rem}
 </style>
 </head>
@@ -43,18 +48,17 @@ button:hover{filter:brightness(1.05)}
 
   <div class="card">
     <div class="row">
-    <div>
-  <label for="symbolInput">Symbol (type to search)</label>
-  <div style="display:flex; gap:8px; align-items:center">
-    <input id="symbolInput" list="symbolList" placeholder="e.g., MNQ, MES, MGC" style="flex:1">
-    <button id="favBtn" type="button" title="Toggle favorite" aria-label="Toggle favorite">☆</button>
-  </div>
-  <datalist id="symbolList"></datalist>
-  <div class="small subtle" id="symbolName"></div>
+      <div>
+        <label for="symbolInput">Symbol (type to search)</label>
+        <div id="symbolRow">
+          <input id="symbolInput" list="symbolList" placeholder="e.g., MNQ, MES, MGC">
+          <button id="favBtn" type="button" title="Toggle favorite" aria-label="Toggle favorite">☆</button>
+        </div>
+        <datalist id="symbolList"></datalist>
+        <div class="small subtle" id="symbolName"></div>
+        <div id="favChips"></div>
+      </div>
 
-  <!-- favorites chips -->
-  <div id="favChips" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px"></div>
-</div>
       <div>
         <label for="broker">Broker / Prop</label>
         <select id="broker">
@@ -117,68 +121,42 @@ button:hover{filter:brightness(1.05)}
     <p class="notice">Sizing uses the <b>after-fees</b> risk per contract. Both views are shown for clarity.</p>
   </div>
 
-  <div class="subtle small">Fees source: Topstep Help Center (updated May 12, 2025). Figures are round-turn. Always verify current fees with your provider.</div>
+  <div class="subtle small">For calculation purposes only. No financial advice. Fees may change—verify with your provider.</div>
 </div>
 
 <script>
 (function(){
-  // --- Core symbol specs: tick values (USD per tick). Add more if needed.
-  // Names are for display/search.
+  // ===== Symbol specs: USD tick values (subset; extend as needed) =====
   const SYMBOLS = {
     // CME Equity
-    ES:{name:"E-mini S&P 500", tv:12.50},   // not in UI by default but fee table supports it
-    MES:{name:"Micro E-mini S&P 500", tv:1.25},
-    NQ:{name:"E-mini Nasdaq-100", tv:5.00},
-    MNQ:{name:"Micro E-mini Nasdaq-100", tv:0.50},
-    RTY:{name:"E-mini Russell 2000", tv:5.00},
-    M2K:{name:"Micro E-mini Russell 2000", tv:0.50},
-    YM:{name:"Mini Dow", tv:5.00},
-    MYM:{name:"Micro Mini Dow", tv:0.50},
-    NKD:{name:"Nikkei 225 (USD)", tv:5.00},
-    MBT:{name:"Micro E-mini Bitcoin", tv:0.50},
-    MET:{name:"Micro E-mini Ether", tv:0.50},
-
-    // NYMEX / Energy & Metals subset
-    CL:{name:"Crude Oil", tv:10.00},
-    MCL:{name:"Micro Crude Oil", tv:1.00},
-    QM:{name:"E-mini Crude Oil", tv:12.50},
-    NG:{name:"Henry Hub Natural Gas", tv:10.00},
-    QG:{name:"E-mini Natural Gas", tv:12.50},
-    MNG:{name:"Micro Henry Hub Natural Gas", tv:1.00},
-    RB:{name:"RBOB Gasoline", tv:4.20},
-    HO:{name:"Heating Oil", tv:4.20},
-    PL:{name:"Platinum", tv:5.00},
-
+    ES:{name:"E-mini S&P 500", tv:12.50}, MES:{name:"Micro E-mini S&P 500", tv:1.25},
+    NQ:{name:"E-mini Nasdaq-100", tv:5.00}, MNQ:{name:"Micro E-mini Nasdaq-100", tv:0.50},
+    RTY:{name:"E-mini Russell 2000", tv:5.00}, M2K:{name:"Micro E-mini Russell 2000", tv:0.50},
+    YM:{name:"Mini Dow", tv:5.00}, MYM:{name:"Micro Mini Dow", tv:0.50},
+    NKD:{name:"Nikkei 225 (USD)", tv:5.00}, MBT:{name:"Micro E-mini Bitcoin", tv:0.50}, MET:{name:"Micro E-mini Ether", tv:0.50},
+    // Energy/Metals
+    CL:{name:"Crude Oil", tv:10.00}, MCL:{name:"Micro Crude Oil", tv:1.00}, QM:{name:"E-mini Crude Oil", tv:12.50},
+    NG:{name:"Nat Gas", tv:10.00}, QG:{name:"E-mini Nat Gas", tv:12.50}, MNG:{name:"Micro Nat Gas", tv:1.00},
+    RB:{name:"RBOB Gasoline", tv:4.20}, HO:{name:"Heating Oil", tv:4.20}, PL:{name:"Platinum", tv:5.00},
     // COMEX
-    GC:{name:"Gold", tv:10.00},
-    MGC:{name:"Micro Gold", tv:1.00},
-    SI:{name:"Silver", tv:5.00},
-    SIL:{name:"Micro Silver", tv:1.00},
-    HG:{name:"Copper", tv:12.50},
-    MHG:{name:"Micro Copper", tv:1.25},
-
-    // CBOT Financials
-    ZT:{name:"2-Year Note", tv:15.625}, ZF:{name:"5-Year Note", tv:7.8125},
-    ZN:{name:"10-Year Note", tv:15.625}, ZB:{name:"30-Year Bond", tv:31.25},
-    UB:{name:"Ultra T-Bond", tv:31.25}, TN:{name:"Ultra 10-Year Note", tv:31.25},
-
+    GC:{name:"Gold", tv:10.00}, MGC:{name:"Micro Gold", tv:1.00},
+    SI:{name:"Silver", tv:5.00}, SIL:{name:"Micro Silver", tv:1.00}, HG:{name:"Copper", tv:12.50}, MHG:{name:"Micro Copper", tv:1.25},
+    // CBOT Rates
+    ZT:{name:"2-Year Note", tv:15.625}, ZF:{name:"5-Year Note", tv:7.8125}, ZN:{name:"10-Year Note", tv:15.625},
+    ZB:{name:"30-Year Bond", tv:31.25}, UB:{name:"Ultra T-Bond", tv:31.25}, TN:{name:"Ultra 10-Year Note", tv:31.25},
     // CBOT Ags
     ZC:{name:"Corn", tv:12.50}, ZW:{name:"Wheat", tv:12.50}, ZS:{name:"Soybeans", tv:12.50},
     ZM:{name:"Soybean Meal", tv:10.00}, ZL:{name:"Soybean Oil", tv:6.00},
-
     // CME FX
-    "6A":{name:"Australian Dollar", tv:6.25}, "M6A":{name:"Micro AUD/USD", tv:1.00},
-    "6B":{name:"British Pound", tv:6.25}, "M6B":{name:"Micro GBP/USD", tv:1.00},
-    "6C":{name:"Canadian Dollar", tv:10.00},
-    "6E":{name:"Euro FX", tv:12.50}, "M6E":{name:"Micro EUR/USD", tv:1.25},
-    "6J":{name:"Japanese Yen", tv:12.50}, "6S":{name:"Swiss Franc", tv:12.50},
-    "6M":{name:"Mexican Peso", tv:5.00}, "6N":{name:"New Zealand Dollar", tv:10.00},
-
+    "6A":{name:"AUD", tv:6.25}, M6A:{name:"Micro AUD/USD", tv:1.00},
+    "6B":{name:"GBP", tv:6.25}, M6B:{name:"Micro GBP/USD", tv:1.00},
+    "6C":{name:"CAD", tv:10.00}, "6E":{name:"EUR", tv:12.50}, M6E:{name:"Micro EUR/USD", tv:1.25},
+    "6J":{name:"JPY", tv:12.50}, "6S":{name:"CHF", tv:12.50}, "6M":{name:"MXN", tv:5.00}, "6N":{name:"NZD", tv:10.00},
     // Livestock
     LE:{name:"Live Cattle", tv:10.00}, HE:{name:"Lean Hogs", tv:10.00}
   };
 
-  // --- Fees (round-turn) per broker/prop and symbol (from Topstep Help article).
+  // ===== Round-turn fees per Broker/Prop (edit if your provider changes) =====
   const FEES = {
     TopstepX:{
       ES:2.80, MES:0.74, NQ:2.80, MNQ:0.74, RTY:2.80, M2K:0.74, NKD:4.34, MBT:2.34, MET:0.24,
@@ -222,10 +200,11 @@ button:hover{filter:brightness(1.05)}
     }
   };
 
-  // Build the searchable list from SYMBOLS keys
+  // ===== helpers =====
   const $ = id => document.getElementById(id);
   const fmt$ = v => isFinite(v)?('$'+v.toFixed(2)):'$0.00';
 
+  // build datalist from SYMBOLS
   const list = $('symbolList');
   for(const [code, info] of Object.entries(SYMBOLS)){
     const opt = document.createElement('option');
@@ -233,126 +212,105 @@ button:hover{filter:brightness(1.05)}
     opt.label = `${code} — ${info.name}`;
     list.appendChild(opt);
   }
-  // Default symbol
-  $('symbolInput').value = 'MNQ';
-  updateSymbolMeta();
 
-  $('symbolInput').addEventListener('input', updateSymbolMeta);
-  $('broker').addEventListener('change', autoFillFee);
-  $('calcBtn').addEventListener('click', calculate);
+  // ---- last state (autosave) ----
+  function saveState(){
+    const state = {
+      symbolInput: ($('symbolInput')?.value||'').trim().toUpperCase(),
+      broker: $('broker')?.value || 'TopstepX',
+      risk: $('risk')?.value || '',
+      stopTicks: $('stopTicks')?.value || '',
+      fee: $('fee')?.value || '',
+      customTickValue: $('customTickValue')?.value || ''
+    };
+    try { localStorage.setItem('quicklot:lastState', JSON.stringify(state)); } catch(e){}
+  }
+  function loadState(){
+    try {
+      const raw = localStorage.getItem('quicklot:lastState');
+      if(!raw) return;
+      const s = JSON.parse(raw);
+      if(s.symbolInput) $('symbolInput').value = s.symbolInput;
+      if(s.broker) $('broker').value = s.broker;
+      if(s.risk) $('risk').value = s.risk;
+      if(s.stopTicks) $('stopTicks').value = s.stopTicks;
+      if(s.fee || s.fee === 0) $('fee').value = s.fee;
+      if(s.customTickValue) $('customTickValue').value = s.customTickValue;
+    } catch(e){}
+  }
+  function wireAutosave(){
+    ['symbolInput','broker','risk','stopTicks','fee','customTickValue']
+      .forEach(id => { const el=$(id); if(el){ el.addEventListener('input', saveState); }});
+  }
+
+  // ---- favorites (star) ----
+  function loadFavs(){
+    try{ const raw = localStorage.getItem('quicklot:favs'); if(raw) return JSON.parse(raw);}catch(e){}
+    return ['MNQ','MYM','MGC']; // defaults
+  }
+  function saveFavs(favs){ try{ localStorage.setItem('quicklot:favs', JSON.stringify(favs)); }catch(e){} }
+  function isFav(sym){ return loadFavs().includes(sym); }
+  function toggleFav(sym){
+    if(!sym) return;
+    let favs = loadFavs();
+    favs = favs.includes(sym) ? favs.filter(s=>s!==sym) : [...favs, sym];
+    saveFavs(favs); renderFavs(); paintStar();
+  }
+  function renderFavs(){
+    const wrap = $('favChips'); wrap.innerHTML='';
+    loadFavs().forEach(code=>{
+      const chip = document.createElement('button');
+      chip.type='button'; chip.className='chip'; chip.title = SYMBOLS[code]?.name || code;
+      chip.textContent = `★ ${code}`;
+      chip.addEventListener('click', ()=>{
+        $('symbolInput').value = code; updateSymbolMeta(); saveState();
+      });
+      wrap.appendChild(chip);
+    });
+  }
+  function paintStar(){ $('favBtn').textContent = isFav(getSymbol()) ? '★' : '☆'; }
+
+  $('favBtn').addEventListener('click', ()=> toggleFav(getSymbol()));
+
+  // ---- UI events ----
+  $('symbolInput').addEventListener('input', ()=>{ updateSymbolMeta(); saveState(); });
+  $('broker').addEventListener('change', ()=>{ autoFillFee(); saveState(); });
+  $('calcBtn').addEventListener('click', ()=>{ calculate(); saveState(); });
+
+  // ---- init ----
+  loadState();
+  if(!$('symbolInput').value){ $('symbolInput').value = 'MNQ'; }
+  updateSymbolMeta();
+  renderFavs();
+  paintStar();
+  wireAutosave();
+
+  // ---- logic ----
+  function getSymbol(){ return ($('symbolInput').value || '').trim().toUpperCase(); }
 
   function updateSymbolMeta(){
     const code = getSymbol();
     const info = SYMBOLS[code];
     $('symbolName').textContent = info ? info.name : '';
     $('tickValue').textContent = info ? fmt$(info.tv)+' / tick' : '—';
-    // If symbol unknown → allow custom tick value field
     $('customTickBox').style.display = info ? 'none' : 'block';
     autoFillFee();
-  }
-
-  function getSymbol(){
-    return ($('symbolInput').value || '').trim().toUpperCase();
+    paintStar();
   }
 
   function autoFillFee(){
     const sym = getSymbol();
     const broker = $('broker').value;
-    if(broker==='Custom'){ return; }
-    const sch = FEES[broker];
-    if(!sch){ return; }
-    const fee = sch.hasOwnProperty(sym) ? sch[sym] : null;
-    if(fee==null || isNaN(fee)){ // unsupported by that broker
-      $('fee').value = '';
-      $('fee').placeholder = 'Unavailable for this broker/symbol';
+    if(broker==='Custom') return;
+    const sch = FEES[broker]; if(!sch) return;
+    const fee = Object.prototype.hasOwnProperty.call(sch, sym) ? sch[sym] : null;
+    if(fee==null || isNaN(fee)){
+      $('fee').value = ''; $('fee').placeholder = 'Unavailable for this broker/symbol';
     }else{
       $('fee').value = fee.toString();
     }
   }
 
-<script>
-// ... הקוד הקיים שלך נשאר ...
-
-// ===== Favorites (star) =====
-function loadFavs(){
-  try{
-    const raw = localStorage.getItem('quicklot:favs');
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  // defaults if none saved
-  return ['MNQ','MYM','MGC'];
-}
-
-function saveFavs(favs){
-  try{ localStorage.setItem('quicklot:favs', JSON.stringify(favs)); }catch(e){}
-}
-
-function isFav(sym){
-  const favs = loadFavs();
-  return favs.includes(sym);
-}
-
-function toggleFav(sym){
-  if(!sym) return;
-  let favs = loadFavs();
-  if(favs.includes(sym)){
-    favs = favs.filter(s => s !== sym);
-  }else{
-    favs.push(sym);
-  }
-  saveFavs(favs);
-  renderFavs();
-  paintStar();
-}
-
-function paintStar(){
-  const sym = getSymbol();
-  const btn = document.getElementById('favBtn');
-  if(!btn) return;
-  btn.textContent = isFav(sym) ? '★' : '☆';
-}
-
-function renderFavs(){
-  const wrap = document.getElementById('favChips');
-  if(!wrap) return;
-  wrap.innerHTML = '';
-  const favs = loadFavs();
-  // סנן רק כאלה שמופיעים ב-SYMBOLS (או הצג גם אחרים אם רוצים)
-  favs.forEach(code=>{
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'chip';
-    chip.title = SYMBOLS[code]?.name || code;
-    chip.innerHTML = `★ ${code}`;
-    chip.addEventListener('click', ()=>{
-      document.getElementById('symbolInput').value = code;
-      updateSymbolMeta();
-      if(typeof saveState==='function') saveState();
-    });
-    wrap.appendChild(chip);
-  });
-}
-
-// חבר את הכוכב
-document.getElementById('favBtn')?.addEventListener('click', ()=>{
-  const sym = getSymbol();
-  toggleFav(sym);
-});
-
-// בזמן עלייה/שינוי סימבול נצבע את הכוכב
-const _oldUpdateSymbolMeta = (typeof updateSymbolMeta==='function') ? updateSymbolMeta : null;
-window.updateSymbolMeta = function(){
-  if(_oldUpdateSymbolMeta) _oldUpdateSymbolMeta();
-  paintStar();
-};
-
-// בזמן עלייה – רנדר מועדפים
-renderFavs();
-paintStar();
-
-// ... שאר הקוד שלך (calculate, autoFillFee וכו') נשאר ...
-</script>
-  
   function currentTickValue(){
     const sym = getSymbol();
     if(SYMBOLS[sym]) return SYMBOLS[sym].tv;
@@ -371,8 +329,8 @@ paintStar();
       show('Please enter: risk > 0, stop ticks > 0, fee ≥ 0, and a valid tick value.');
       return;
     }
-    const rpcBefore = stopT * tickVal;       // before commission
-    const rpcAfter  = stopT * tickVal + fee; // after commission
+    const rpcBefore = stopT * tickVal;
+    const rpcAfter  = stopT * tickVal + fee;
     const contracts = Math.floor(risk / rpcAfter);
     const totalBefore = contracts * rpcBefore;
     const totalAfter  = contracts * rpcAfter;
@@ -388,10 +346,7 @@ paintStar();
     if(contracts<1) show('Increase risk or decrease stop to get at least 1 contract (after-fees sizing).');
   }
 
-  function show(txt){
-    $('msg').textContent = txt;
-    $('msg').style.display='block';
-  }
+  function show(txt){ $('msg').textContent = txt; $('msg').style.display='block'; }
 })();
 </script>
 </body>
