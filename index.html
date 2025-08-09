@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QuickLot – חישוב חוזים לפי טיקים</title>
+<title>QuickLot – Futures Contracts Calculator</title>
 <style>
 body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:720px;margin:24px auto;padding:0 16px;line-height:1.5}
 h1{font-size:1.4rem;margin:0 0 12px}
@@ -19,10 +19,10 @@ button{cursor:pointer;font-weight:700}
 </style>
 </head>
 <body>
-<h1>QuickLot – חישוב חוזים לפי טיקים</h1>
+<h1>QuickLot – Futures Contracts Calculator</h1>
 <div class="card">
   <div class="row">
-    <div><label for="symbol">סימבול</label>
+    <div><label for="symbol">Symbol</label>
       <select id="symbol">
         <option value="MES">MES – Micro S&P 500</option>
         <option value="MNQ">MNQ – Micro Nasdaq</option>
@@ -33,38 +33,39 @@ button{cursor:pointer;font-weight:700}
         <option value="CUSTOM">Custom…</option>
       </select>
     </div>
-    <div><label for="risk">$ סיכון לפוזיציה</label>
-      <input id="risk" type="number" inputmode="decimal" placeholder="לדוגמה 300">
+    <div><label for="risk">Risk per trade ($)</label>
+      <input id="risk" type="number" inputmode="decimal" placeholder="e.g. 300">
     </div>
   </div>
   <div class="row">
-    <div><label for="stopTicks">סטופ לוס (בטיקים)</label>
-      <input id="stopTicks" type="number" inputmode="numeric" placeholder="לדוגמה 30">
+    <div><label for="stopTicks">Stop loss (in ticks)</label>
+      <input id="stopTicks" type="number" inputmode="numeric" placeholder="e.g. 30">
     </div>
-    <div><label for="fee">עמלה פר חוזה ($)</label>
-      <input id="fee" type="number" inputmode="decimal" step="0.01" placeholder="ימולא לפי סימבול">
+    <div><label for="fee">Fee per contract ($)</label>
+      <input id="fee" type="number" inputmode="decimal" step="0.01" placeholder="Auto filled">
     </div>
   </div>
 
+  <!-- Custom fields (only visible if 'Custom' symbol is selected) -->
   <div id="customBox" class="row" style="display:none">
     <div><label for="customTickValue">Custom Tick Value ($)</label>
-      <input id="customTickValue" type="number" inputmode="decimal" step="0.01" placeholder="לדוגמה 0.50">
+      <input id="customTickValue" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.50">
     </div>
     <div><label for="customTickSize">Custom Tick Size</label>
-      <input id="customTickSize" type="number" inputmode="decimal" step="0.01" placeholder="לדוגמה 0.25">
+      <input id="customTickSize" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.25">
     </div>
   </div>
 
-  <button id="calcBtn">חשב</button>
+  <button id="calcBtn">Calculate</button>
   <div id="msg" class="warn" style="display:none"></div>
 </div>
 
 <div class="card">
   <div class="grid">
-    <div>ערך טיק:</div><div id="tickValue" class="out">$0.50</div>
-    <div>סיכון לחוזה אחד:</div><div id="rpc" class="out">$0.00</div>
-    <div>כמות חוזים (מעוגל מטה):</div><div id="contracts" class="out">0</div>
-    <div>סיכון כולל בפועל:</div><div id="totalRisk" class="out">$0.00</div>
+    <div>Tick value:</div><div id="tickValue" class="out">$0.50</div>
+    <div>Risk per contract:</div><div id="rpc" class="out">$0.00</div>
+    <div>Contracts (rounded down):</div><div id="contracts" class="out">0</div>
+    <div>Total actual risk:</div><div id="totalRisk" class="out">$0.00</div>
   </div>
   <hr>
   <div class="grid">
@@ -74,11 +75,12 @@ button{cursor:pointer;font-weight:700}
     <div>4R:</div><div id="r4" class="out">$0.00</div>
     <div>5R:</div><div id="r5" class="out">$0.00</div>
   </div>
-  <p class="muted">למטרות חישוב בלבד. אין ייעוץ השקעות.</p>
+  <p class="muted">For calculation purposes only. No financial advice.</p>
 </div>
 
 <script>
 (function(){
+  // Symbol data: tick value, default fee, and tick size (tick size used only if adding points conversion)
   const SYMBOLS = {
     MES:{tickValue:1.25, defaultFee:0.74, tickSize:0.25},
     MNQ:{tickValue:0.50, defaultFee:0.74, tickSize:0.25},
@@ -100,7 +102,7 @@ button{cursor:pointer;font-weight:700}
       return;
     }
     $('fee').value = SYMBOLS[s].defaultFee;
-    $('tickValue').textContent = fmt$(SYMBOLS[s].tickValue) + ' לטיק';
+    $('tickValue').textContent = fmt$(SYMBOLS[s].tickValue) + ' per tick';
   }
 
   $('symbol').addEventListener('change', setDefaults);
@@ -117,13 +119,13 @@ button{cursor:pointer;font-weight:700}
     let tickValue;
     if(s==='CUSTOM'){
       tickValue = parseFloat($('customTickValue').value);
-      if(!(tickValue>0)){ show('אנא הזן Custom Tick Value גדול מ-0'); return; }
+      if(!(tickValue>0)){ show('Please enter a custom tick value greater than 0.'); return; }
     }else{
       tickValue = SYMBOLS[s].tickValue;
     }
 
     if(!(risk>0) || !(stopTicks>0) || !(fee>=0)){
-      show('צריך סיכון גדול מ-0, סטופ טיקים גדול מ-0. עמלה יכולה להיות 0 או יותר.');
+      show('Please enter risk > 0, stop ticks > 0. Fee can be 0 or more.');
       return;
     }
 
@@ -136,7 +138,7 @@ button{cursor:pointer;font-weight:700}
     $('totalRisk').textContent = fmt$(total);
     for(let n=1;n<=5;n++) $('r'+n).textContent = fmt$(total*n);
 
-    if(contracts<1) show('הגדל סיכון או הקטן סטופ כדי לקבל לפחות חוזה אחד.');
+    if(contracts<1) show('Increase risk or decrease stop to get at least 1 contract.');
   });
 
   function show(txt){ $('msg').textContent = txt; $('msg').style.display='block'; }
