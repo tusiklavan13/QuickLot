@@ -5,143 +5,236 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QuickLot – Futures Contracts Calculator</title>
 <style>
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:720px;margin:24px auto;padding:0 16px;line-height:1.5}
-h1{font-size:1.4rem;margin:0 0 12px}
-.card{border:1px solid #ddd;border-radius:12px;padding:16px;margin:12px 0}
-label{display:block;font-weight:600;margin:.5rem 0 .25rem}
-input,select,button{font:inherit;width:100%;padding:.6rem;border:1px solid #ccc;border-radius:10px}
-button{cursor:pointer;font-weight:700}
+:root{
+  --bg:#0f1226; --card:#15193a; --card2:#101433; --text:#e9ecff; --muted:#b5b9d9;
+  --primary:#6c8dff; --accent:#7ef0d4; --warn:#ffb3b3; --border:#27306a; --btn:#5a77ff;
+}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#0b0e22, #0f1226 40%, #0b0e22);color:var(--text)}
+.container{max-width:820px;margin:24px auto;padding:0 16px}
+h1{font-size:1.5rem;margin:0 0 16px;display:flex;gap:10px;align-items:center}
+.badge{font-size:.75rem;padding:4px 8px;border-radius:999px;background:rgba(126,240,212,.15);color:var(--accent);border:1px solid rgba(126,240,212,.3)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+label{display:block;font-weight:600;margin:.5rem 0 .35rem;color:var(--muted)}
+input,select,button{font:inherit;width:100%;padding:.7rem;border:1px solid var(--border);border-radius:12px;background:var(--card2);color:var(--text)}
+select{background-image:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0))}
+button{cursor:pointer;font-weight:700;background:var(--btn);border:none}
+button:hover{filter:brightness(1.05)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.muted{color:#666;font-size:.9rem}
-.out{font-weight:700}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.warn{background:#fff6f6;border:1px solid #f3d6d6;color:#a33;padding:8px;border-radius:8px;margin-top:8px}
+@media (max-width:640px){.row{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.value{font-weight:700}
+.subtle{color:var(--muted);font-size:.9rem}
+.warn{background:rgba(255,179,179,.1);border:1px solid rgba(255,179,179,.4);color:#ffd0d0;padding:10px;border-radius:10px;margin-top:10px}
+.kicker{font-size:.9rem;color:var(--muted);margin:6px 0 0}
+.hr{height:1px;background:var(--border);margin:12px 0}
+.notice{font-size:.85rem;color:var(--muted)}
+header{padding:22px 0 8px}
+footer{opacity:.8;margin:12px 0 30px}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card2);font-size:.8rem}
 </style>
 </head>
 <body>
-<h1>QuickLot – Futures Contracts Calculator</h1>
-<div class="card">
-  <div class="row">
-    <div><label for="symbol">Symbol</label>
-      <select id="symbol">
-        <option value="MES">MES – Micro S&P 500</option>
-        <option value="MNQ">MNQ – Micro Nasdaq</option>
-        <option value="MYM">MYM – Micro Dow</option>
-        <option value="M2K">M2K – Micro Russell</option>
-        <option value="MGC">MGC – Micro Gold</option>
-        <option value="MCL">MCL – Micro WTI Crude</option>
-        <option value="CUSTOM">Custom…</option>
-      </select>
-    </div>
-    <div><label for="risk">Risk per trade ($)</label>
-      <input id="risk" type="number" inputmode="decimal" placeholder="e.g. 300">
-    </div>
-  </div>
-  <div class="row">
-    <div><label for="stopTicks">Stop loss (in ticks)</label>
-      <input id="stopTicks" type="number" inputmode="numeric" placeholder="e.g. 30">
-    </div>
-    <div><label for="fee">Fee per contract ($)</label>
-      <input id="fee" type="number" inputmode="decimal" step="0.01" placeholder="Auto filled">
-    </div>
-  </div>
+  <div class="container">
+    <header>
+      <h1>QuickLot <span class="badge">Futures Size Calculator</span></h1>
+      <div class="subtle">Enter risk & stop (ticks) → get contracts. Shows results <b>before</b> and <b>after</b> commission.</div>
+    </header>
 
-  <!-- Custom fields (only visible if 'Custom' symbol is selected) -->
-  <div id="customBox" class="row" style="display:none">
-    <div><label for="customTickValue">Custom Tick Value ($)</label>
-      <input id="customTickValue" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.50">
-    </div>
-    <div><label for="customTickSize">Custom Tick Size</label>
-      <input id="customTickSize" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.25">
-    </div>
-  </div>
+    <div class="card">
+      <div class="row">
+        <div>
+          <label for="symbol">Symbol</label>
+          <select id="symbol">
+            <option value="MES">MES – Micro S&P 500</option>
+            <option value="MNQ">MNQ – Micro Nasdaq</option>
+            <option value="MYM">MYM – Micro Dow</option>
+            <option value="M2K">M2K – Micro Russell</option>
+            <option value="MGC">MGC – Micro Gold</option>
+            <option value="MCL">MCL – Micro WTI Crude</option>
+            <option value="CUSTOM">Custom…</option>
+          </select>
+        </div>
+        <div>
+          <label for="broker">Broker / Prop</label>
+          <select id="broker">
+            <option value="TopstepX">TopstepX (micros)</option>
+            <option value="GenericLow">Generic Low Fees</option>
+            <option value="GenericStd">Generic Standard</option>
+            <option value="Custom">Custom…</option>
+          </select>
+          <div class="kicker">Changing symbol/broker updates default fee. You can still edit it.</div>
+        </div>
+      </div>
 
-  <button id="calcBtn">Calculate</button>
-  <div id="msg" class="warn" style="display:none"></div>
-</div>
+      <div class="row">
+        <div>
+          <label for="risk">Risk per trade ($)</label>
+          <input id="risk" type="number" inputmode="decimal" placeholder="e.g. 300">
+        </div>
+        <div>
+          <label for="stopTicks">Stop loss (ticks)</label>
+          <input id="stopTicks" type="number" inputmode="numeric" placeholder="e.g. 30">
+        </div>
+      </div>
 
-<div class="card">
-  <div class="grid">
-    <div>Tick value:</div><div id="tickValue" class="out">$0.50</div>
-    <div>Risk per contract:</div><div id="rpc" class="out">$0.00</div>
-    <div>Contracts (rounded down):</div><div id="contracts" class="out">0</div>
-    <div>Total actual risk:</div><div id="totalRisk" class="out">$0.00</div>
+      <div class="row">
+        <div>
+          <label for="fee">Fee per contract ($)</label>
+          <input id="fee" type="number" inputmode="decimal" step="0.01" placeholder="Auto-filled">
+        </div>
+        <div id="customBox" style="display:none">
+          <label for="customTickValue">Custom Tick Value ($)</label>
+          <input id="customTickValue" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 0.50">
+        </div>
+      </div>
+
+      <button id="calcBtn">Calculate</button>
+      <div id="msg" class="warn" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <div class="grid">
+        <div class="pill">Tick value</div><div class="value" id="tickValue">$0.50 / tick</div>
+        <div>Risk <b>per contract (before fees)</b>:</div><div class="value" id="rpcBefore">$0.00</div>
+        <div>Risk <b>per contract (after fees)</b>:</div><div class="value" id="rpcAfter">$0.00</div>
+      </div>
+      <div class="hr"></div>
+      <div class="grid">
+        <div>Contracts (rounded down):</div><div class="value" id="contracts">0</div>
+        <div>Total risk <b>before fees</b>:</div><div class="value" id="totalBefore">$0.00</div>
+        <div>Total risk <b>after fees</b>:</div><div class="value" id="totalAfter">$0.00</div>
+      </div>
+      <div class="hr"></div>
+      <div class="grid">
+        <div>1R (after fees):</div><div class="value" id="r1">$0.00</div>
+        <div>2R (after fees):</div><div class="value" id="r2">$0.00</div>
+        <div>3R (after fees):</div><div class="value" id="r3">$0.00</div>
+        <div>4R (after fees):</div><div class="value" id="r4">$0.00</div>
+        <div>5R (after fees):</div><div class="value" id="r5">$0.00</div>
+      </div>
+      <p class="notice">Sizing uses the <b>after-fees</b> risk per contract. Both views are shown for clarity.</p>
+    </div>
+
+    <footer class="subtle">For calculation purposes only. No financial advice.</footer>
   </div>
-  <hr>
-  <div class="grid">
-    <div>1R:</div><div id="r1" class="out">$0.00</div>
-    <div>2R:</div><div id="r2" class="out">$0.00</div>
-    <div>3R:</div><div id="r3" class="out">$0.00</div>
-    <div>4R:</div><div id="r4" class="out">$0.00</div>
-    <div>5R:</div><div id="r5" class="out">$0.00</div>
-  </div>
-  <p class="muted">For calculation purposes only. No financial advice.</p>
-</div>
 
 <script>
 (function(){
-  // Symbol data: tick value, default fee, and tick size (tick size used only if adding points conversion)
+  // === Symbol specs (tick value). tickSize included if later you want points→ticks.
   const SYMBOLS = {
-    MES:{tickValue:1.25, defaultFee:0.74, tickSize:0.25},
-    MNQ:{tickValue:0.50, defaultFee:0.74, tickSize:0.25},
-    MYM:{tickValue:0.50, defaultFee:0.74, tickSize:1.00},
-    M2K:{tickValue:0.50, defaultFee:0.74, tickSize:0.10},
-    MGC:{tickValue:1.00, defaultFee:1.24, tickSize:0.10},
-    MCL:{tickValue:1.00, defaultFee:0.90, tickSize:0.01}
+    MES:{tickValue:1.25, tickSize:0.25},
+    MNQ:{tickValue:0.50, tickSize:0.25},
+    MYM:{tickValue:0.50, tickSize:1.00},
+    M2K:{tickValue:0.50, tickSize:0.10},
+    MGC:{tickValue:1.00, tickSize:0.10},
+    MCL:{tickValue:1.00, tickSize:0.01}
+  };
+
+  // === Fee schedules per Broker/Prop (defaults; user may override in the Fee field)
+  const FEES = {
+    TopstepX: {  // example defaults (edit to your reality)
+      MES:0.74, MNQ:0.74, MYM:0.74, M2K:0.74, MGC:1.24, MCL:0.90
+    },
+    GenericLow:{
+      MES:0.59, MNQ:0.59, MYM:0.59, M2K:0.59, MGC:0.99, MCL:0.79
+    },
+    GenericStd:{
+      MES:0.90, MNQ:0.90, MYM:0.90, M2K:0.90, MGC:1.40, MCL:1.10
+    }
+    // Custom: user will type Fee manually
   };
 
   const $ = id => document.getElementById(id);
   const fmt$ = v => isFinite(v)?('$'+v.toFixed(2)):'$0.00';
 
-  function setDefaults(){
+  function currentTickValue(){
     const s = $('symbol').value;
-    $('customBox').style.display = (s==='CUSTOM')?'grid':'none';
     if(s==='CUSTOM'){
-      $('fee').value = $('fee').value || 0;
-      $('tickValue').textContent = 'Custom';
-      return;
+      const v = parseFloat($('customTickValue').value);
+      return (v>0)? v : NaN;
     }
-    $('fee').value = SYMBOLS[s].defaultFee;
-    $('tickValue').textContent = fmt$(SYMBOLS[s].tickValue) + ' per tick';
+    return SYMBOLS[s].tickValue;
   }
 
-  $('symbol').addEventListener('change', setDefaults);
-  setDefaults();
+  function autoFillFee(){
+    const s = $('symbol').value;
+    const b = $('broker').value;
+    if(b==='Custom'){ return; } // don't override user
+    if(s==='CUSTOM'){ return; } // can't map fees for unknown symbol
+    const schedule = FEES[b];
+    if(schedule && typeof schedule[s]==='number'){
+      $('fee').value = schedule[s].toString();
+    }
+  }
+
+  function updateTickLabel(){
+    const s = $('symbol').value;
+    if(s==='CUSTOM'){
+      $('tickValue').textContent = 'Custom';
+    } else {
+      $('tickValue').textContent = fmt$(SYMBOLS[s].tickValue) + ' / tick';
+    }
+  }
+
+  function setSymbolDefaults(){
+    const s = $('symbol').value;
+    $('customBox').style.display = (s==='CUSTOM') ? 'block' : 'none';
+    updateTickLabel();
+    autoFillFee();
+  }
+
+  $('symbol').addEventListener('change', setSymbolDefaults);
+  $('broker').addEventListener('change', autoFillFee);
+
+  // initial defaults
+  setSymbolDefaults();
 
   $('calcBtn').addEventListener('click', ()=>{
-    const s = $('symbol').value;
-    const risk = parseFloat($('risk').value);
-    const stopTicks = parseFloat($('stopTicks').value);
-    const fee = parseFloat($('fee').value);
-
     $('msg').style.display='none';
 
-    let tickValue;
-    if(s==='CUSTOM'){
-      tickValue = parseFloat($('customTickValue').value);
-      if(!(tickValue>0)){ show('Please enter a custom tick value greater than 0.'); return; }
-    }else{
-      tickValue = SYMBOLS[s].tickValue;
-    }
+    const tickVal = currentTickValue();
+    const risk    = parseFloat($('risk').value);
+    const stopT   = parseFloat($('stopTicks').value);
+    const fee     = parseFloat($('fee').value);
 
-    if(!(risk>0) || !(stopTicks>0) || !(fee>=0)){
-      show('Please enter risk > 0, stop ticks > 0. Fee can be 0 or more.');
+    if(!(risk>0) || !(stopT>0) || !(fee>=0) || !(tickVal>0)){
+      show('Please enter: risk > 0, stop ticks > 0, fee ≥ 0, and a valid tick value.');
       return;
     }
 
-    const rpc = stopTicks * tickValue + fee;         
-    const contracts = Math.floor(risk / rpc);
-    const total = contracts * rpc;
+    // per-contract risk BEFORE fees and AFTER fees
+    const rpcBefore = stopT * tickVal;          // before commission
+    const rpcAfter  = stopT * tickVal + fee;    // after commission
 
-    $('rpc').textContent = fmt$(rpc);
+    // contracts are constrained by AFTER-fees risk per contract (more conservative & realistic)
+    const contracts = Math.floor(risk / rpcAfter);
+
+    // totals
+    const totalBefore = contracts * rpcBefore;
+    const totalAfter  = contracts * rpcAfter;
+
+    // write to UI
+    $('rpcBefore').textContent = fmt$(rpcBefore);
+    $('rpcAfter').textContent  = fmt$(rpcAfter);
     $('contracts').textContent = contracts;
-    $('totalRisk').textContent = fmt$(total);
-    for(let n=1;n<=5;n++) $('r'+n).textContent = fmt$(total*n);
+    $('totalBefore').textContent = fmt$(totalBefore);
+    $('totalAfter').textContent  = fmt$(totalAfter);
 
-    if(contracts<1) show('Increase risk or decrease stop to get at least 1 contract.');
+    // R multiples are based on AFTER-fees total risk
+    for(let n=1;n<=5;n++){
+      $('r'+n).textContent = fmt$(totalAfter * n);
+    }
+
+    if(contracts < 1){
+      show('Increase risk or decrease stop to get at least 1 contract (after-fees sizing).');
+    }
   });
 
-  function show(txt){ $('msg').textContent = txt; $('msg').style.display='block'; }
+  function show(txt){
+    $('msg').textContent = txt;
+    $('msg').style.display='block';
+  }
 })();
 </script>
 </body>
