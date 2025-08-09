@@ -1,1 +1,146 @@
-# QuickLot
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuickLot – חישוב חוזים לפי טיקים</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:720px;margin:24px auto;padding:0 16px;line-height:1.5}
+h1{font-size:1.4rem;margin:0 0 12px}
+.card{border:1px solid #ddd;border-radius:12px;padding:16px;margin:12px 0}
+label{display:block;font-weight:600;margin:.5rem 0 .25rem}
+input,select,button{font:inherit;width:100%;padding:.6rem;border:1px solid #ccc;border-radius:10px}
+button{cursor:pointer;font-weight:700}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.muted{color:#666;font-size:.9rem}
+.out{font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.warn{background:#fff6f6;border:1px solid #f3d6d6;color:#a33;padding:8px;border-radius:8px;margin-top:8px}
+</style>
+</head>
+<body>
+<h1>QuickLot – חישוב חוזים לפי טיקים</h1>
+<div class="card">
+  <div class="row">
+    <div><label for="symbol">סימבול</label>
+      <select id="symbol">
+        <option value="MES">MES – Micro S&P 500</option>
+        <option value="MNQ">MNQ – Micro Nasdaq</option>
+        <option value="MYM">MYM – Micro Dow</option>
+        <option value="M2K">M2K – Micro Russell</option>
+        <option value="MGC">MGC – Micro Gold</option>
+        <option value="MCL">MCL – Micro WTI Crude</option>
+        <option value="CUSTOM">Custom…</option>
+      </select>
+    </div>
+    <div><label for="risk">$ סיכון לפוזיציה</label>
+      <input id="risk" type="number" inputmode="decimal" placeholder="לדוגמה 300">
+    </div>
+  </div>
+  <div class="row">
+    <div><label for="stopTicks">סטופ לוס (בטיקים)</label>
+      <input id="stopTicks" type="number" inputmode="numeric" placeholder="לדוגמה 30">
+    </div>
+    <div><label for="fee">עמלה פר חוזה ($)</label>
+      <input id="fee" type="number" inputmode="decimal" step="0.01" placeholder="ימולא לפי סימבול">
+    </div>
+  </div>
+
+  <div id="customBox" class="row" style="display:none">
+    <div><label for="customTickValue">Custom Tick Value ($)</label>
+      <input id="customTickValue" type="number" inputmode="decimal" step="0.01" placeholder="לדוגמה 0.50">
+    </div>
+    <div><label for="customTickSize">Custom Tick Size</label>
+      <input id="customTickSize" type="number" inputmode="decimal" step="0.01" placeholder="לדוגמה 0.25">
+    </div>
+  </div>
+
+  <button id="calcBtn">חשב</button>
+  <div id="msg" class="warn" style="display:none"></div>
+</div>
+
+<div class="card">
+  <div class="grid">
+    <div>ערך טיק:</div><div id="tickValue" class="out">$0.50</div>
+    <div>סיכון לחוזה אחד:</div><div id="rpc" class="out">$0.00</div>
+    <div>כמות חוזים (מעוגל מטה):</div><div id="contracts" class="out">0</div>
+    <div>סיכון כולל בפועל:</div><div id="totalRisk" class="out">$0.00</div>
+  </div>
+  <hr>
+  <div class="grid">
+    <div>1R:</div><div id="r1" class="out">$0.00</div>
+    <div>2R:</div><div id="r2" class="out">$0.00</div>
+    <div>3R:</div><div id="r3" class="out">$0.00</div>
+    <div>4R:</div><div id="r4" class="out">$0.00</div>
+    <div>5R:</div><div id="r5" class="out">$0.00</div>
+  </div>
+  <p class="muted">למטרות חישוב בלבד. אין ייעוץ השקעות.</p>
+</div>
+
+<script>
+(function(){
+  const SYMBOLS = {
+    MES:{tickValue:1.25, defaultFee:0.74, tickSize:0.25},
+    MNQ:{tickValue:0.50, defaultFee:0.74, tickSize:0.25},
+    MYM:{tickValue:0.50, defaultFee:0.74, tickSize:1.00},
+    M2K:{tickValue:0.50, defaultFee:0.74, tickSize:0.10},
+    MGC:{tickValue:1.00, defaultFee:1.24, tickSize:0.10},
+    MCL:{tickValue:1.00, defaultFee:0.90, tickSize:0.01}
+  };
+
+  const $ = id => document.getElementById(id);
+  const fmt$ = v => isFinite(v)?('$'+v.toFixed(2)):'$0.00';
+
+  function setDefaults(){
+    const s = $('symbol').value;
+    $('customBox').style.display = (s==='CUSTOM')?'grid':'none';
+    if(s==='CUSTOM'){
+      $('fee').value = $('fee').value || 0;
+      $('tickValue').textContent = 'Custom';
+      return;
+    }
+    $('fee').value = SYMBOLS[s].defaultFee;
+    $('tickValue').textContent = fmt$(SYMBOLS[s].tickValue) + ' לטיק';
+  }
+
+  $('symbol').addEventListener('change', setDefaults);
+  setDefaults();
+
+  $('calcBtn').addEventListener('click', ()=>{
+    const s = $('symbol').value;
+    const risk = parseFloat($('risk').value);
+    const stopTicks = parseFloat($('stopTicks').value);
+    const fee = parseFloat($('fee').value);
+
+    $('msg').style.display='none';
+
+    let tickValue;
+    if(s==='CUSTOM'){
+      tickValue = parseFloat($('customTickValue').value);
+      if(!(tickValue>0)){ show('אנא הזן Custom Tick Value גדול מ-0'); return; }
+    }else{
+      tickValue = SYMBOLS[s].tickValue;
+    }
+
+    if(!(risk>0) || !(stopTicks>0) || !(fee>=0)){
+      show('צריך סיכון גדול מ-0, סטופ טיקים גדול מ-0. עמלה יכולה להיות 0 או יותר.');
+      return;
+    }
+
+    const rpc = stopTicks * tickValue + fee;         
+    const contracts = Math.floor(risk / rpc);
+    const total = contracts * rpc;
+
+    $('rpc').textContent = fmt$(rpc);
+    $('contracts').textContent = contracts;
+    $('totalRisk').textContent = fmt$(total);
+    for(let n=1;n<=5;n++) $('r'+n).textContent = fmt$(total*n);
+
+    if(contracts<1) show('הגדל סיכון או הקטן סטופ כדי לקבל לפחות חוזה אחד.');
+  });
+
+  function show(txt){ $('msg').textContent = txt; $('msg').style.display='block'; }
+})();
+</script>
+</body>
+</html>
