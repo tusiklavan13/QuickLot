@@ -10,6 +10,10 @@
   --primary:#6c8dff; --accent:#7ef0d4; --warn:#ffb3b3; --border:#27306a; --btn:#5a77ff;
 }
 *{box-sizing:border-box}
+  #favBtn{min-width:42px;border-radius:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card2);cursor:pointer}
+.chip .x{opacity:.7;font-weight:700}
+.chip:hover{filter:brightness(1.06)}
 body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#0b0e22,#0f1226 40%,#0b0e22);color:var(--text)}
 .container{max-width:860px;margin:24px auto;padding:0 16px}
 h1{font-size:1.5rem;margin:0 0 16px;display:flex;gap:10px;align-items:center}
@@ -39,12 +43,18 @@ button:hover{filter:brightness(1.05)}
 
   <div class="card">
     <div class="row">
-      <div>
-        <label for="symbolInput">Symbol (type to search)</label>
-        <input id="symbolInput" list="symbolList" placeholder="e.g., MNQ, MES, MGC">
-        <datalist id="symbolList"></datalist>
-        <div class="small subtle" id="symbolName"></div>
-      </div>
+    <div>
+  <label for="symbolInput">Symbol (type to search)</label>
+  <div style="display:flex; gap:8px; align-items:center">
+    <input id="symbolInput" list="symbolList" placeholder="e.g., MNQ, MES, MGC" style="flex:1">
+    <button id="favBtn" type="button" title="Toggle favorite" aria-label="Toggle favorite">☆</button>
+  </div>
+  <datalist id="symbolList"></datalist>
+  <div class="small subtle" id="symbolName"></div>
+
+  <!-- favorites chips -->
+  <div id="favChips" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:8px"></div>
+</div>
       <div>
         <label for="broker">Broker / Prop</label>
         <select id="broker">
@@ -260,6 +270,89 @@ button:hover{filter:brightness(1.05)}
     }
   }
 
+<script>
+// ... הקוד הקיים שלך נשאר ...
+
+// ===== Favorites (star) =====
+function loadFavs(){
+  try{
+    const raw = localStorage.getItem('quicklot:favs');
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  // defaults if none saved
+  return ['MNQ','MYM','MGC'];
+}
+
+function saveFavs(favs){
+  try{ localStorage.setItem('quicklot:favs', JSON.stringify(favs)); }catch(e){}
+}
+
+function isFav(sym){
+  const favs = loadFavs();
+  return favs.includes(sym);
+}
+
+function toggleFav(sym){
+  if(!sym) return;
+  let favs = loadFavs();
+  if(favs.includes(sym)){
+    favs = favs.filter(s => s !== sym);
+  }else{
+    favs.push(sym);
+  }
+  saveFavs(favs);
+  renderFavs();
+  paintStar();
+}
+
+function paintStar(){
+  const sym = getSymbol();
+  const btn = document.getElementById('favBtn');
+  if(!btn) return;
+  btn.textContent = isFav(sym) ? '★' : '☆';
+}
+
+function renderFavs(){
+  const wrap = document.getElementById('favChips');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  const favs = loadFavs();
+  // סנן רק כאלה שמופיעים ב-SYMBOLS (או הצג גם אחרים אם רוצים)
+  favs.forEach(code=>{
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip';
+    chip.title = SYMBOLS[code]?.name || code;
+    chip.innerHTML = `★ ${code}`;
+    chip.addEventListener('click', ()=>{
+      document.getElementById('symbolInput').value = code;
+      updateSymbolMeta();
+      if(typeof saveState==='function') saveState();
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+// חבר את הכוכב
+document.getElementById('favBtn')?.addEventListener('click', ()=>{
+  const sym = getSymbol();
+  toggleFav(sym);
+});
+
+// בזמן עלייה/שינוי סימבול נצבע את הכוכב
+const _oldUpdateSymbolMeta = (typeof updateSymbolMeta==='function') ? updateSymbolMeta : null;
+window.updateSymbolMeta = function(){
+  if(_oldUpdateSymbolMeta) _oldUpdateSymbolMeta();
+  paintStar();
+};
+
+// בזמן עלייה – רנדר מועדפים
+renderFavs();
+paintStar();
+
+// ... שאר הקוד שלך (calculate, autoFillFee וכו') נשאר ...
+</script>
+  
   function currentTickValue(){
     const sym = getSymbol();
     if(SYMBOLS[sym]) return SYMBOLS[sym].tv;
