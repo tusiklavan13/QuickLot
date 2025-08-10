@@ -112,15 +112,18 @@ function savePrefs(){
 function populateSymFilterFromData(){
   if(!symFilter) return;
   symFilter.innerHTML = '<option value="ALL">All symbols</option>';
-  // נשתמש במה שבאמת הגיע מה-JSON
-  const syms = Object.keys((DATA.daily && Object.keys(DATA.daily).length? DATA.daily : DATA.hourly) || {}).sort();
+
+  const tfData = DATA.daily || {}; // לוקחים את ה-Daily כברירת מחדל
+  const syms = Object.keys(tfData).sort();
+
   for (const s of syms){
     const opt = document.createElement('option');
     opt.value = s;
-    opt.textContent = s; // אם יש לך SYMBOL_META[s].name אפשר להוסיף כאן
+    opt.textContent = s;
     symFilter.appendChild(opt);
   }
 }
+
 symFilter.addEventListener('change', render);
 
 // ====== render ======
