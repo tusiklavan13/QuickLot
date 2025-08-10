@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market Table – QuickLot</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <div class="navwrap">
+    <a class="brand" href="index.html">QuickLot</a>
+    <span class="badge">Market Table</span>
+    <a href="premium.html">Premium</a>
+    <a href="terms.html">Terms</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Market Table</h1>
+  <div class="card">
+    <div class="grid cols-2">
+      <div>
+        <label for="timeframe" class="subtle">View</label>
+        <select id="timeframe">
+          <option value="daily">Daily</option>
+          <option value="hourly">Hourly</option>
+        </select>
+      </div>
+      <div>
+        <label for="tblSearch" class="subtle">Search</label>
+        <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES, MGC">
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div style="overflow:auto">
+      <table class="table" id="marketTable">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Name</th>
+            <th style="text-align:right">Trend</th>
+            <th style="text-align:right">Pips/Ticks</th>
+            <th style="text-align:right">$</th>
+            <th style="text-align:right">%</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="subtle">Tip: Use the search box to quickly filter. You can switch Daily/Hourly above.</p>
+  </div>
+</div>
+
+<footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
+
+<script>
+// --- meta for names (extend as you wish; same symbols as באינדקס שלך)
+const SYMBOL_META = {
+  MES:{name:"Micro E-mini S&P 500"},
+  MNQ:{name:"Micro E-mini Nasdaq-100"},
+  MYM:{name:"Micro Mini Dow"},
+  M2K:{name:"Micro E-mini Russell 2000"},
+  MGC:{name:"Micro Gold"},
+  MCL:{name:"Micro Crude Oil"}
+};
+
+// --- example data; later we can switch to fetch('market.json')
+const DATA = {
+  daily: {
+    MNQ: {trend:"up",   pips: 282.75, usd: null, pct: 1.19},
+    MES: {trend:"down", pips:  61.90, usd: null, pct: 0.97},
+    MYM: {trend:"flat", pips: 460.32, usd: null, pct: 1.04},
+    MGC: {trend:"up",   pips:  18.20, usd: null, pct: 0.95},
+    MCL: {trend:"down", pips:  85.50, usd: null, pct: 1.12}
+  },
+  hourly: {
+    MNQ: {trend:"up",   pips:  42.6, usd: null, pct: 0.18},
+    MES: {trend:"down", pips:  11.4, usd: null, pct: 0.12},
+    MYM: {trend:"flat", pips:  55.0, usd: null, pct: 0.15},
+    MGC: {trend:"up",   pips:   2.1, usd: null, pct: 0.11},
+    MCL: {trend:"down", pips:   9.8, usd: null, pct: 0.19}
+  }
+};
+// optional: $ calc via tick values if usd is null
+const TICK_VALUE = { MES:1.25, MNQ:0.50, MYM:0.50, M2K:0.50, MGC:1.00, MCL:1.00 };
+
+const $ = s => document.querySelector(s);
+const tbody = $('#marketTable tbody');
+const tfSel = $('#timeframe');
+const searchEl = $('#tblSearch');
+
+(function loadPrefs(){
+  try{
+    const tf = localStorage.getItem('quicklot:tblTF'); if(tf) tfSel.value = tf;
+    const q  = localStorage.getItem('quicklot:tblQ');  if(q) searchEl.value = q;
+  }catch(e){}
+})();
+function savePrefs(){
+  try{
+    localStorage.setItem('quicklot:tblTF', tfSel.value);
+    localStorage.setItem('quicklot:tblQ', searchEl.value);
+  }catch(e){}
+}
+
+function fmtNum(v){
+  return (v==null || !isFinite(v)) ? '—' :
+         (Math.abs(v)>=1000 ? v.toLocaleString(undefined,{maximumFractionDigits:2}) : (+v).toFixed(3).replace(/\.?0+$/,''));
+}
+
+function render(){
+  const tf = tfSel.value;
+  const q = (searchEl.value||'').trim().toUpperCase();
+  const src = DATA[tf]||{};
+  const rows=[];
+
+  for(const sym of Object.keys(SYMBOL_META)){
+    const meta = SYMBOL_META[sym];
+    const rec = src[sym];
+    if(!rec) continue;
+    if(q && !sym.includes(q) && !(meta.name||'').toUpperCase().includes(q)) continue;
+
+    const tv = TICK_VALUE[sym];
+    const usd = (rec.usd!=null) ? rec.usd : (isFinite(tv) ? rec.pips*tv : null);
+    rows.push({sym, name:meta.name, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
+  }
+
+  rows.sort((a,b)=>(b.pips||0)-(a.pips||0));
+
+  tbody.innerHTML = rows.map(r=>{
+    const ttxt = r.trend==='up'?'▲ up' : r.trend==='down'?'▼ down' : '—';
+    const tcls = r.trend==='up'?'good' : r.trend==='down'?'bad' : '';
+    return `<tr>
+      <td>${r.sym}</td>
+      <td>${r.name}</td>
+      <td class="${tcls}" style="text-align:right">${ttxt}</td>
+      <td style="text-align:right">${fmtNum(r.pips)}</td>
+      <td style="text-align:right">${r.usd!=null?('$'+fmtNum(r.usd)):'—'}</td>
+      <td style="text-align:right">${r.pct!=null?(fmtNum(r.pct)+'%'):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  savePrefs();
+}
+
+tfSel.addEventListener('change', render);
+searchEl.addEventListener('input', ()=>{ clearTimeout(window.__t); window.__t=setTimeout(render,120); });
+
+render();
+</script>
+<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
+</html>
