@@ -38,3 +38,33 @@ footer{max-width:900px;margin:24px auto;padding:0 16px 24px;color:var(--muted);f
 .grid{display:grid;gap:12px}
 @media(min-width:720px){.grid.cols-2{grid-template-columns:1fr 1fr}}
 .good{color:#7ef0d4} .bad{color:#ffb3b3}
+nav{
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(6px);
+  background: rgba(16,20,51,.75);
+  border-bottom: 1px solid var(--border);
+}
+.navwrap{
+  max-width: 900px; margin: 0 auto;
+  display: flex; gap: 8px; align-items: center;
+  padding: 10px 16px;
+}
+nav .brand{
+  font-weight: 800; letter-spacing: .3px; margin-right: 10px;
+}
+nav a{
+  color: var(--text);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  transition: background-color .2s ease, color .2s ease, transform .05s ease;
+}
+nav a:hover{ background: rgba(255,255,255,.07); }
+nav a:active{ transform: translateY(1px); }
+
+/* מצב Active לקישור של הדף הנוכחי */
+nav a.active{
+  background: rgba(126,240,212,.18);
+  color: var(--accent);
+  border: 1px solid rgba(126,240,212,.35);
+}
