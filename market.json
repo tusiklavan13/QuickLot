@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Table – QuickLot</title>
 <link rel="stylesheet" href="style.css?v=6">
-
+<!-- OG/Icons אופציונלי אם כבר הוספת בכל העמודים -->
 </head>
 <body>
 
@@ -66,6 +66,7 @@
 <footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
 
 <script>
+// ====== symbol names (אפשר להרחיב כרצונך) ======
 const SYMBOL_META = {
   MES:{name:"Micro E-mini S&P 500"},
   MNQ:{name:"Micro E-mini Nasdaq-100"},
@@ -75,8 +76,10 @@ const SYMBOL_META = {
   MCL:{name:"Micro Crude Oil"}
 };
 
+// אם אין usd ב-market.json נחסם אוטומטית לפי ערך טיק:
 const TICK_VALUE = { MES:1.25, MNQ:0.50, MYM:0.50, M2K:0.50, MGC:1.00, MCL:1.00 };
 
+// ====== state ======
 let DATA = { daily:{}, hourly:{} };
 
 const $ = s => document.querySelector(s);
@@ -97,6 +100,7 @@ function savePrefs(){
   }catch(e){}
 }
 
+// ====== render ======
 function fmtNum(v){
   return (v==null || !isFinite(v)) ? '—'
     : (Math.abs(v)>=1000 ? Number(v).toLocaleString(undefined,{maximumFractionDigits:2})
@@ -139,6 +143,7 @@ function render(){
   savePrefs();
 }
 
+// ====== data load from market.json ======
 async function loadData(){
   tbody.innerHTML = `<tr><td colspan="6" class="subtle">Loading market.json…</td></tr>`;
   try{
