@@ -1,1 +1,43 @@
-shalom
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About – QuickLot</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <div class="navwrap">
+    <a class="brand" href="index.html">QuickLot</a>
+    <a href="market-table.html">Market Table</a>
+    <a href="premium.html">Premium</a>
+    <a href="terms.html">Terms</a>
+    <span class="badge">About</span>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>About QuickLot</h1>
+  <div class="card">
+    <p><b>QuickLot</b> is a fast futures position sizing tool. Enter your risk (USD) and stop (ticks) → get exact contracts, with both <i>before-fees</i> and <i>after-fees</i> views. You can pick a broker/prop schedule and we auto-fill round-turn fees.</p>
+    <p>Highlights:</p>
+    <ul>
+      <li>Search symbols quickly (datalist) + ⭐ favorites</li>
+      <li>Broker/Prop fee presets (edit anytime)</li>
+      <li>Local save of your last inputs (no account needed)</li>
+      <li>Clean mobile-first UI</li>
+    </ul>
+    <p class="subtle">Roadmap: TP targets by entry & side, slippage in ticks, points↔ticks conversion, PWA install, JSON-based auto updates for fees & volatility.</p>
+  </div>
+
+  <div class="card">
+    <h2>Contact</h2>
+    <p>Found a fee discrepancy or want a new feature? Email: <a href="mailto:support@example.com">support@example.com</a></p>
+  </div>
+</div>
+
+<footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
+<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
+</html>
