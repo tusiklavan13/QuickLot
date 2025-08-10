@@ -24,22 +24,31 @@
   <h1>Market Table</h1>
 
   <div class="card">
-    <div class="grid cols-2">
-      <div>
-        <label for="timeframe" class="subtle">View</label>
-        <select id="timeframe">
-          <option value="daily">Daily</option>
-          <option value="hourly">Hourly</option>
-        </select>
-      </div>
-      <div style="display:flex; gap:8px; align-items:flex-end">
-        <div style="flex:1">
-          <label for="tblSearch" class="subtle">Search</label>
-          <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES, MGC">
-        </div>
-        <button class="btn" id="refreshBtn" type="button">Refresh</button>
-      </div>
+   <div class="grid cols-2">
+  <div>
+    <label class="subtle" for="timeframe">View</label>
+    <select id="timeframe">
+      <option value="daily">Daily</option>
+      <option value="hourly">Hourly</option>
+    </select>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap:8px; align-items:end">
+    <div>
+      <label class="subtle" for="symFilter">Symbol</label>
+      <select id="symFilter">
+        <option value="ALL">All symbols</option>
+      </select>
     </div>
+
+    <div style="display:flex; gap:8px; align-items:end">
+      <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
+      <button class="btn" id="refreshBtn" type="button">Refresh</button>
+    </div>
+  </div>
+</div>
+
+<div class="hr"></div>
 
     <div class="hr"></div>
 
@@ -84,6 +93,7 @@ let DATA = { daily:{}, hourly:{} };
 
 const $ = s => document.querySelector(s);
 const tbody = $('#marketTable tbody');
+  const symFilter = document.getElementById('symFilter');
 const tfSel = $('#timeframe');
 const searchEl = $('#tblSearch');
 
@@ -99,40 +109,54 @@ function savePrefs(){
     localStorage.setItem('quicklot:tblQ', searchEl.value);
   }catch(e){}
 }
+function populateSymFilterFromData(){
+  if(!symFilter) return;
+  symFilter.innerHTML = '<option value="ALL">All symbols</option>';
+  // נשתמש במה שבאמת הגיע מה-JSON
+  const syms = Object.keys((DATA.daily && Object.keys(DATA.daily).length? DATA.daily : DATA.hourly) || {}).sort();
+  for (const s of syms){
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s; // אם יש לך SYMBOL_META[s].name אפשר להוסיף כאן
+    symFilter.appendChild(opt);
+  }
+}
+symFilter.addEventListener('change', render);
 
 // ====== render ======
-function fmtNum(v){
-  return (v==null || !isFinite(v)) ? '—'
-    : (Math.abs(v)>=1000 ? Number(v).toLocaleString(undefined,{maximumFractionDigits:2})
-                         : Number(v).toFixed(3).replace(/\.?0+$/,''));
-}
-
 function render(){
-  const tf = tfSel.value;
-  const q = (searchEl.value||'').trim().toUpperCase();
-  const src = DATA[tf]||{};
-  const rows=[];
+  const tf  = tfSel.value;
+  const q   = (searchEl.value||'').trim().toUpperCase();
+  const only = (symFilter && symFilter.value) ? symFilter.value : 'ALL';
 
-  for(const sym of Object.keys(SYMBOL_META)){
-    const meta = SYMBOL_META[sym];
+  const src = DATA[tf] || {};
+  const rows = [];
+
+  // נרוץ על הסימבולים שקיימים בפועל בקובץ הנתונים
+  const fromData = Object.keys(src).sort();
+  const loopSyms = (only !== 'ALL') ? [only] : fromData;
+
+  for (const sym of loopSyms){
     const rec = src[sym];
     if(!rec) continue;
 
-    if(q && !sym.includes(q) && !(meta.name||'').toUpperCase().includes(q)) continue;
+    const nice = (SYMBOL_META && SYMBOL_META[sym] && SYMBOL_META[sym].name) ? SYMBOL_META[sym].name : '';
+    if(q && !sym.includes(q) && !nice.toUpperCase().includes(q)) continue;
 
-    const tv = TICK_VALUE[sym];
+    const tv  = TICK_VALUE ? TICK_VALUE[sym] : undefined;
     const usd = (rec.usd!=null) ? rec.usd : (isFinite(tv) ? rec.pips*tv : null);
-    rows.push({sym, name:meta.name, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
+
+    rows.push({sym, name:nice, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
   }
 
   rows.sort((a,b)=>(b.pips||0)-(a.pips||0));
 
   tbody.innerHTML = rows.map(r=>{
     const ttxt = r.trend==='up'?'▲ up' : r.trend==='down'?'▼ down' : '—';
-    const tcls = r.trend==='up'?'good' : r.trend==='down'?'bad' : '';
+    const tcls = r.trend==='up'?'good'   : r.trend==='down'?'bad'     : '';
     return `<tr>
       <td>${r.sym}</td>
-      <td>${r.name}</td>
+      <td>${r.name||''}</td>
       <td class="${tcls}" style="text-align:right">${ttxt}</td>
       <td style="text-align:right">${fmtNum(r.pips)}</td>
       <td style="text-align:right">${r.usd!=null?('$'+fmtNum(r.usd)):'—'}</td>
@@ -140,7 +164,9 @@ function render(){
     </tr>`;
   }).join('');
 
-  savePrefs();
+  savePrefs?.();
+}
+
 }
 
 // ====== data load from market.json ======
@@ -151,6 +177,7 @@ async function loadData(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const j = await res.json();
     DATA = { daily: j.daily||{}, hourly: j.hourly||{} };
+populateSymFilterFromData();
   }catch(e){
     tbody.innerHTML = `<tr><td colspan="6" class="bad">Failed to load market.json (${e.message}).</td></tr>`;
     return;
