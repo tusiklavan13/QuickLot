@@ -42,7 +42,18 @@ button:hover{filter:brightness(1.05)}
 </style>
 </head>
 <body>
+<nav>
+  <div class="navwrap">
+    <a class="brand" href="index.html">QuickLot</a>
+    <a href="market-table.html">Market Table</a>
+    <a href="premium.html">Premium</a>
+    <a href="terms.html">Terms</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
 <div class="container">
+
+  <div class="container">
   <h1>QuickLot <span class="badge">Futures Size Calculator</span></h1>
   <div class="subtle">Enter risk & stop (ticks) → get contracts. Shows results <b>before</b> and <b>after</b> commission.</div>
 
@@ -349,5 +360,8 @@ button:hover{filter:brightness(1.05)}
   function show(txt){ $('msg').textContent = txt; $('msg').style.display='block'; }
 })();
 </script>
+  <footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
+<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+
 </body>
 </html>
