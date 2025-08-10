@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Premium – QuickLot</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <div class="navwrap">
+    <a class="brand" href="index.html">QuickLot</a>
+    <a href="market-table.html">Market Table</a>
+    <span class="badge">Premium</span>
+    <a href="terms.html">Terms</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>QuickLot Premium</h1>
+  <div class="card grid cols-2">
+    <div>
+      <h2>What you get</h2>
+      <ul>
+        <li>Saved presets (multiple strategies)</li>
+        <li>TP targets (1R–5R) by entry & side</li>
+        <li>Slippage ticks & rounding modes</li>
+        <li>Points↔ticks conversion by symbol</li>
+        <li>Volatility/ATR panel & export</li>
+        <li>Priority requests & support</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Pricing</h2>
+      <p><span class="tag">$9.99 / month</span> or <span class="tag">$99 / year</span></p>
+      <p class="subtle">7-day free trial • Cancel anytime</p>
+      <a class="btn" href="#" onclick="alert('Coming soon')">Get Premium</a>
+      <p class="subtle">We’ll add card/PayPal when ready. For early access, email <a href="mailto:support@example.com">support@example.com</a>.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>FAQ</h2>
+    <p><b>Will the free version remain?</b> Yes. Premium adds power features on top of the free calculator.</p>
+    <p><b>Can I switch plans?</b> Anytime. Monthly ↔ Yearly.</p>
+  </div>
+</div>
+
+<footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
+<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
+</html>
