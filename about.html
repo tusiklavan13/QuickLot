@@ -39,5 +39,18 @@
 
 <footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
 <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+  <script>
+  // mark active link by URL
+  (function(){
+    const path = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('nav a[href]').forEach(a=>{
+      const href = a.getAttribute('href');
+      if ((path==='index.html' && href==='index.html') || href===path){
+        a.classList.add('active');
+      }
+    });
+  })();
+</script>
+
 </body>
 </html>
