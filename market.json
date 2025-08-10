@@ -1,16 +1,83 @@
 {
   "daily": {
-    "MNQ": { "trend": "up", "pips": 282.75, "usd": null, "pct": 1.19 },
-    "MES": { "trend": "down", "pips": 61.90, "usd": null, "pct": 0.97 },
-    "MYM": { "trend": "flat", "pips": 460.32, "usd": null, "pct": 1.04 },
-    "MGC": { "trend": "up", "pips": 18.20, "usd": null, "pct": 0.95 },
-    "MCL": { "trend": "down", "pips": 85.50, "usd": null, "pct": 1.12 }
+    "MNQ": {
+      "trend": "up",
+      "pips": 1296.51,
+      "usd": null,
+      "pct": 0.93
+    },
+    "MES": {
+      "trend": "up",
+      "pips": 275.5,
+      "usd": null,
+      "pct": 0.74
+    },
+    "MYM": {
+      "trend": "up",
+      "pips": 486.79,
+      "usd": null,
+      "pct": 0.45
+    },
+    "M2K": {
+      "trend": "up",
+      "pips": 388.71,
+      "usd": null,
+      "pct": 0.19
+    },
+    "MGC": {
+      "trend": "up",
+      "pips": 476.93,
+      "usd": null,
+      "pct": 2.68
+    },
+    "MCL": {
+      "trend": "down",
+      "pips": 195.14,
+      "usd": null,
+      "pct": -0.83
+    }
   },
   "hourly": {
-    "MNQ": { "trend": "up", "pips": 42.6, "usd": null, "pct": 0.18 },
-    "MES": { "trend": "down", "pips": 11.4, "usd": null, "pct": 0.12 },
-    "MYM": { "trend": "flat", "pips": 55.0, "usd": null, "pct": 0.15 },
-    "MGC": { "trend": "up", "pips": 2.1, "usd": null, "pct": 0.11 },
-    "MCL": { "trend": "down", "pips": 9.8, "usd": null, "pct": 0.19 }
+    "MNQ": {
+      "trend": "flat",
+      "pips": 190.21,
+      "usd": null,
+      "pct": 0.0
+    },
+    "MES": {
+      "trend": "flat",
+      "pips": 44.07,
+      "usd": null,
+      "pct": -0.0
+    },
+    "MYM": {
+      "trend": "flat",
+      "pips": 78.86,
+      "usd": null,
+      "pct": 0.0
+    },
+    "M2K": {
+      "trend": "flat",
+      "pips": 68.71,
+      "usd": null,
+      "pct": -0.01
+    },
+    "MGC": {
+      "trend": "up",
+      "pips": 199.0,
+      "usd": null,
+      "pct": 1.0
+    },
+    "MCL": {
+      "trend": "down",
+      "pips": 56.36,
+      "usd": null,
+      "pct": -0.44
+    }
+  },
+  "_meta": {
+    "updated_utc": "2025-08-10T04:28:34.260297Z",
+    "source": "Yahoo Finance via yfinance",
+    "atr_period": 14
   }
 }
