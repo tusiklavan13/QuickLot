@@ -1,0 +1,16 @@
+{
+  "daily": {
+    "MNQ": { "trend": "up",   "pips": 282.75, "usd": null, "pct": 1.19 },
+    "MES": { "trend": "down", "pips": 61.90,  "usd": null, "pct": 0.97 },
+    "MYM": { "trend": "flat", "pips": 460.32, "usd": null, "pct": 1.04 },
+    "MGC": { "trend": "up",   "pips": 18.20,  "usd": null, "pct": 0.95 },
+    "MCL": { "trend": "down", "pips": 85.50,  "usd": null, "pct": 1.12 }
+  },
+  "hourly": {
+    "MNQ": { "trend": "up",   "pips": 42.6, "usd": null, "pct": 0.18 },
+    "MES": { "trend": "down", "pips": 11.4, "usd": null, "pct": 0.12 },
+    "MYM": { "trend": "flat", "pips": 55.0, "usd": null, "pct": 0.15 },
+    "MGC": { "trend": "up",   "pips": 2.1,  "usd": null, "pct": 0.11 },
+    "MCL": { "trend": "down", "pips": 9.8,  "usd": null, "pct": 0.19 }
+  }
+}
