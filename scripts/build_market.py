@@ -8,34 +8,70 @@ import yfinance as yf
 # ---- CONFIG ----
 # מיפוי סימבולים שלך -> טיקר ב-Yahoo
 SYMBOL_MAP = {
-    "MNQ": "NQ=F",   # Micro E-mini Nasdaq-100 -> E-mini proxy
-    "MES": "ES=F",   # Micro E-mini S&P 500   -> E-mini proxy
-    "MYM": "YM=F",   # Micro Mini Dow         -> Mini proxy
-    "M2K": "RTY=F",  # Micro Russell 2000     -> E-mini proxy
-    "MGC": "GC=F",   # Micro Gold -> Gold
-    "MCL": "CL=F",   # Micro WTI  -> WTI
-    # תוכל להוסיף כאן סימבולים נוספים בהמשך
+    # Micros → ממופים לחוזה הסטנדרטי (טוב ל-ATR)
+    "MES": "ES=F", "MNQ": "NQ=F", "MYM": "YM=F", "M2K": "RTY=F",
+    "MGC": "GC=F", "SIL": "SI=F", "MHG": "HG=F", "MCL": "CL=F", "MNG": "NG=F",
+
+    # E-mini / רגילים
+    "ES": "ES=F", "NQ": "NQ=F", "YM": "YM=F", "RTY": "RTY=F",
+    "GC": "GC=F", "SI": "SI=F", "HG": "HG=F", "CL": "CL=F", "NG": "NG=F",
+    "RB": "RB=F", "HO": "HO=F", "PL": "PL=F",
+
+    # Treasuries
+    "ZT": "ZT=F", "ZF": "ZF=F", "ZN": "ZN=F", "ZB": "ZB=F", "UB": "UB=F", "TN": "TN=F",
+
+    # Grains
+    "ZC": "ZC=F", "ZW": "ZW=F", "ZS": "ZS=F", "ZM": "ZM=F", "ZL": "ZL=F",
+
+    # FX futures
+    "6A": "6A=F", "6B": "6B=F", "6C": "6C=F", "6E": "6E=F",
+    "6J": "6J=F", "6S": "6S=F", "6N": "6N=F", "6M": "6M=F"
 }
+
 
 # tick size (points per tick) כדי להמיר ATR (ב"נקודות") ל-"טיקים"
 TICK_SIZE = {
-    "MNQ": 0.25,
-    "MES": 0.25,
-    "MYM": 1.00,
-    "M2K": 0.10,
-    "MGC": 0.10,
-    "MCL": 0.01,
+    # Equity
+    "ES": 0.25, "MES": 0.25, "NQ": 0.25, "MNQ": 0.25, "YM": 1.00, "MYM": 1.00,
+    "RTY": 0.10, "M2K": 0.10,
+
+    # Metals / Energy
+    "GC": 0.10, "MGC": 0.10, "SI": 0.005, "SIL": 0.005, "HG": 0.0005, "MHG": 0.0005,
+    "CL": 0.01, "MCL": 0.01, "NG": 0.001, "MNG": 0.001, "RB": 0.0001, "HO": 0.0001, "PL": 0.10,
+
+    # Rates (32nds ו-halves; כאן בשבר נקודה עשרונית של נקודה)
+    "ZT": 0.0078125, "ZF": 0.0078125, "ZN": 0.015625,
+    "ZB": 0.03125, "UB": 0.03125, "TN": 0.015625,
+
+    # Grains
+    "ZC": 0.25, "ZW": 0.25, "ZS": 0.25, "ZM": 0.10, "ZL": 0.01,
+
+    # FX
+    "6A": 0.0001, "6B": 0.0001, "6C": 0.00005, "6E": 0.00005,
+    "6J": 0.0000005, "6S": 0.0001, "6N": 0.0001, "6M": 0.0001
 }
 
 # ערך טיק (USD) – אם תרצה שהטבלה תחשב $ כשאין usd בקובץ
 TICK_VALUE = {
-    "MNQ": 0.50,
-    "MES": 1.25,
-    "MYM": 0.50,
-    "M2K": 0.50,
-    "MGC": 1.00,
-    "MCL": 1.00,
+    # Equity
+    "ES": 12.50, "MES": 1.25, "NQ": 5.00, "MNQ": 0.50, "YM": 5.00, "MYM": 0.50,
+    "RTY": 5.00, "M2K": 0.50,
+
+    # Metals / Energy
+    "GC": 10.00, "MGC": 1.00, "SI": 25.00, "SIL": 1.00, "HG": 12.50, "MHG": 1.25,
+    "CL": 10.00, "MCL": 1.00, "NG": 10.00, "MNG": 1.00, "RB": 4.20, "HO": 4.20, "PL": 5.00,
+
+    # Rates
+    "ZT": 15.625, "ZF": 7.8125, "ZN": 15.625, "ZB": 31.25, "UB": 31.25, "TN": 31.25,
+
+    # Grains
+    "ZC": 12.50, "ZW": 12.50, "ZS": 12.50, "ZM": 10.00, "ZL": 6.00,
+
+    # FX
+    "6A": 6.25, "6B": 6.25, "6C": 10.00, "6E": 12.50,
+    "6J": 12.50, "6S": 12.50, "6N": 10.00, "6M": 5.00
 }
+
 
 # כמה נרות למשוך
 DAILY_LOOKBACK = "60d"
