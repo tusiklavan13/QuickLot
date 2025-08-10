@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Table – QuickLot</title>
-<link rel="stylesheet" href="style.css?v=6">
-<!-- OG/Icons אופציונלי אם כבר הוספת בכל העמודים -->
+<link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
@@ -24,34 +23,33 @@
   <h1>Market Table</h1>
 
   <div class="card">
-   <div class="grid cols-2">
-  <div>
-    <label class="subtle" for="timeframe">View</label>
-    <select id="timeframe">
-      <option value="daily">Daily</option>
-      <option value="hourly">Hourly</option>
-    </select>
-  </div>
+    <!-- Controls -->
+    <div class="grid cols-2">
+      <div>
+        <label class="subtle" for="timeframe">View</label>
+        <select id="timeframe">
+          <option value="daily">Daily</option>
+          <option value="hourly">Hourly</option>
+        </select>
+      </div>
 
-  <div class="grid" style="grid-template-columns: 1fr 1fr; gap:8px; align-items:end">
-    <div>
-      <label class="subtle" for="symFilter">Symbol</label>
-      <select id="symFilter">
-        <option value="ALL">All symbols</option>
-      </select>
+      <div class="grid" style="grid-template-columns: 1fr 1fr; gap:8px; align-items:end">
+        <div>
+          <label class="subtle" for="symFilter">Symbol</label>
+          <select id="symFilter">
+            <option value="ALL">All symbols</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px; align-items:end">
+          <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
+          <button class="btn" id="refreshBtn" type="button">Refresh</button>
+        </div>
+      </div>
     </div>
-
-    <div style="display:flex; gap:8px; align-items:end">
-      <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
-      <button class="btn" id="refreshBtn" type="button">Refresh</button>
-    </div>
-  </div>
-</div>
-
-<div class="hr"></div>
 
     <div class="hr"></div>
 
+    <!-- Table -->
     <div style="overflow:auto">
       <table class="table" id="marketTable">
         <thead>
@@ -75,81 +73,84 @@
 <footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
 
 <script>
-// ====== symbol names (אפשר להרחיב כרצונך) ======
+// ---- Optional name map (רק לשם יפה בעמודה "Name"; אם אין, יוצג ריק) ----
 const SYMBOL_META = {
-  MES:{name:"Micro E-mini S&P 500"},
-  MNQ:{name:"Micro E-mini Nasdaq-100"},
-  MYM:{name:"Micro Mini Dow"},
-  M2K:{name:"Micro E-mini Russell 2000"},
-  MGC:{name:"Micro Gold"},
-  MCL:{name:"Micro Crude Oil"}
+  MES:{name:"Micro E-mini S&P 500"}, MNQ:{name:"Micro E-mini Nasdaq-100"},
+  MYM:{name:"Micro Mini Dow"}, M2K:{name:"Micro E-mini Russell 2000"},
+  MGC:{name:"Micro Gold"}, SIL:{name:"Micro Silver"}, MHG:{name:"Micro Copper"},
+  MCL:{name:"Micro Crude Oil"}, MNG:{name:"Micro Nat Gas"},
+  ES:{name:"E-mini S&P 500"}, NQ:{name:"E-mini Nasdaq-100"},
+  YM:{name:"Mini Dow"}, RTY:{name:"E-mini Russell 2000"},
+  GC:{name:"Gold"}, SI:{name:"Silver"}, HG:{name:"Copper"}, CL:{name:"Crude Oil"}, NG:{name:"Nat Gas"},
+  RB:{name:"RBOB Gasoline"}, HO:{name:"Heating Oil"}, PL:{name:"Platinum"},
+  ZT:{name:"2Y Note"}, ZF:{name:"5Y Note"}, ZN:{name:"10Y Note"}, ZB:{name:"30Y Bond"}, UB:{name:"Ultra T-Bond"}, TN:{name:"Ultra 10Y"},
+  ZC:{name:"Corn"}, ZW:{name:"Wheat"}, ZS:{name:"Soybeans"}, ZM:{name:"Soybean Meal"}, ZL:{name:"Soybean Oil"},
+  "6A":{name:"AUD"}, "6B":{name:"GBP"}, "6C":{name:"CAD"}, "6E":{name:"EUR"},
+  "6J":{name:"JPY"}, "6S":{name:"CHF"}, "6N":{name:"NZD"}, "6M":{name:"MXN"}
 };
 
-// אם אין usd ב-market.json נחסם אוטומטית לפי ערך טיק:
-const TICK_VALUE = { MES:1.25, MNQ:0.50, MYM:0.50, M2K:0.50, MGC:1.00, MCL:1.00 };
+// ---- Tick value map (כדי לחשב $ אם בקובץ יש רק pips/ticks) ----
+const TICK_VALUE = {
+  ES:12.5, MES:1.25, NQ:5, MNQ:0.5, YM:5, MYM:0.5, RTY:5, M2K:0.5,
+  GC:10, MGC:1, SI:25, SIL:1, HG:12.5, MHG:1.25, CL:10, MCL:1, NG:10, MNG:1, RB:4.2, HO:4.2, PL:5,
+  ZT:15.625, ZF:7.8125, ZN:15.625, ZB:31.25, UB:31.25, TN:31.25,
+  ZC:12.5, ZW:12.5, ZS:12.5, ZM:10, ZL:6,
+  "6A":6.25, "6B":6.25, "6C":10, "6E":12.5, "6J":12.5, "6S":12.5, "6N":10, "6M":5
+};
 
-// ====== state ======
+// ---- State & helpers ----
 let DATA = { daily:{}, hourly:{} };
-
 const $ = s => document.querySelector(s);
 const tbody = $('#marketTable tbody');
-  const symFilter = document.getElementById('symFilter');
 const tfSel = $('#timeframe');
+const symFilter = $('#symFilter');
 const searchEl = $('#tblSearch');
 
-(function loadPrefs(){
-  try{
-    const tf = localStorage.getItem('quicklot:tblTF'); if(tf) tfSel.value = tf;
-    const q  = localStorage.getItem('quicklot:tblQ');  if(q) searchEl.value = q;
-  }catch(e){}
-})();
-function savePrefs(){
-  try{
-    localStorage.setItem('quicklot:tblTF', tfSel.value);
-    localStorage.setItem('quicklot:tblQ', searchEl.value);
-  }catch(e){}
+function fmtNum(v){
+  return (v==null || !isFinite(v)) ? '—'
+    : (Math.abs(v)>=1000 ? Number(v).toLocaleString(undefined,{maximumFractionDigits:2})
+                         : Number(v).toFixed(3).replace(/\.?0+$/,''));
 }
+
+// Fill the symbol dropdown from DATA
 function populateSymFilterFromData(){
   if(!symFilter) return;
   symFilter.innerHTML = '<option value="ALL">All symbols</option>';
-
-  const tfData = DATA.daily || {}; // לוקחים את ה-Daily כברירת מחדל
-  const syms = Object.keys(tfData).sort();
-
-  for (const s of syms){
+  // נעדיף daily; אם אין, ניקח hourly
+  const base = DATA.daily && Object.keys(DATA.daily).length ? DATA.daily : (DATA.hourly||{});
+  const syms = Object.keys(base).sort();
+  for(const s of syms){
     const opt = document.createElement('option');
+    const nice = SYMBOL_META[s]?.name ? ` — ${SYMBOL_META[s].name}` : '';
     opt.value = s;
-    opt.textContent = s;
+    opt.textContent = s + nice;
     symFilter.appendChild(opt);
   }
 }
 
-symFilter.addEventListener('change', render);
-
-// ====== render ======
 function render(){
   const tf  = tfSel.value;
   const q   = (searchEl.value||'').trim().toUpperCase();
-  const only = (symFilter && symFilter.value) ? symFilter.value : 'ALL';
+  const only = symFilter?.value || 'ALL';
 
   const src = DATA[tf] || {};
   const rows = [];
 
-  // נרוץ על הסימבולים שקיימים בפועל בקובץ הנתונים
+  // נרוץ על מה שבאמת יש בקובץ הנתונים
   const fromData = Object.keys(src).sort();
   const loopSyms = (only !== 'ALL') ? [only] : fromData;
 
-  for (const sym of loopSyms){
+  for(const sym of loopSyms){
     const rec = src[sym];
     if(!rec) continue;
 
-    const nice = (SYMBOL_META && SYMBOL_META[sym] && SYMBOL_META[sym].name) ? SYMBOL_META[sym].name : '';
-    if(q && !sym.includes(q) && !nice.toUpperCase().includes(q)) continue;
+    const name = SYMBOL_META[sym]?.name || '';
+    if(q && !sym.includes(q) && !name.toUpperCase().includes(q)) continue;
 
-    const tv  = TICK_VALUE ? TICK_VALUE[sym] : undefined;
+    const tv  = TICK_VALUE[sym];
     const usd = (rec.usd!=null) ? rec.usd : (isFinite(tv) ? rec.pips*tv : null);
 
-    rows.push({sym, name:nice, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
+    rows.push({sym, name, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
   }
 
   rows.sort((a,b)=>(b.pips||0)-(a.pips||0));
@@ -159,20 +160,16 @@ function render(){
     const tcls = r.trend==='up'?'good'   : r.trend==='down'?'bad'     : '';
     return `<tr>
       <td>${r.sym}</td>
-      <td>${r.name||''}</td>
+      <td>${r.name}</td>
       <td class="${tcls}" style="text-align:right">${ttxt}</td>
       <td style="text-align:right">${fmtNum(r.pips)}</td>
       <td style="text-align:right">${r.usd!=null?('$'+fmtNum(r.usd)):'—'}</td>
       <td style="text-align:right">${r.pct!=null?(fmtNum(r.pct)+'%'):'—'}</td>
     </tr>`;
   }).join('');
-
-  savePrefs?.();
 }
 
-}
-
-// ====== data load from market.json ======
+// Load data from market.json
 async function loadData(){
   tbody.innerHTML = `<tr><td colspan="6" class="subtle">Loading market.json…</td></tr>`;
   try{
@@ -180,7 +177,7 @@ async function loadData(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const j = await res.json();
     DATA = { daily: j.daily||{}, hourly: j.hourly||{} };
-populateSymFilterFromData();
+    populateSymFilterFromData();   // חשוב: לבנות את הרשימה אחרי שהנתונים קיימים
   }catch(e){
     tbody.innerHTML = `<tr><td colspan="6" class="bad">Failed to load market.json (${e.message}).</td></tr>`;
     return;
@@ -188,14 +185,15 @@ populateSymFilterFromData();
   render();
 }
 
-// events
+// Events
 tfSel.addEventListener('change', render);
+symFilter.addEventListener('change', render);
 let t; searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(render,120); });
 document.getElementById('refreshBtn').addEventListener('click', loadData);
 
-// init
+// Init
 loadData();
-document.getElementById('y').textContent=new Date().getFullYear();
+document.getElementById('y').textContent = new Date().getFullYear();
 </script>
 
 </body>
