@@ -56,7 +56,7 @@
 <footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
 
 <script>
-// --- meta for names (extend as you wish; same symbols as באינדקס שלך)
+
 const SYMBOL_META = {
   MES:{name:"Micro E-mini S&P 500"},
   MNQ:{name:"Micro E-mini Nasdaq-100"},
@@ -65,49 +65,32 @@ const SYMBOL_META = {
   MGC:{name:"Micro Gold"},
   MCL:{name:"Micro Crude Oil"}
 };
-
-// --- example data; later we can switch to fetch('market.json')
-const DATA = {
-  daily: {
-    MNQ: {trend:"up",   pips: 282.75, usd: null, pct: 1.19},
-    MES: {trend:"down", pips:  61.90, usd: null, pct: 0.97},
-    MYM: {trend:"flat", pips: 460.32, usd: null, pct: 1.04},
-    MGC: {trend:"up",   pips:  18.20, usd: null, pct: 0.95},
-    MCL: {trend:"down", pips:  85.50, usd: null, pct: 1.12}
-  },
-  hourly: {
-    MNQ: {trend:"up",   pips:  42.6, usd: null, pct: 0.18},
-    MES: {trend:"down", pips:  11.4, usd: null, pct: 0.12},
-    MYM: {trend:"flat", pips:  55.0, usd: null, pct: 0.15},
-    MGC: {trend:"up",   pips:   2.1, usd: null, pct: 0.11},
-    MCL: {trend:"down", pips:   9.8, usd: null, pct: 0.19}
-  }
-};
-// optional: $ calc via tick values if usd is null
+// אם תרצה לחשב $ אוטומטית כשאין usd:
 const TICK_VALUE = { MES:1.25, MNQ:0.50, MYM:0.50, M2K:0.50, MGC:1.00, MCL:1.00 };
+
+// state
+let DATA = { daily:{}, hourly:{} };
 
 const $ = s => document.querySelector(s);
 const tbody = $('#marketTable tbody');
 const tfSel = $('#timeframe');
 const searchEl = $('#tblSearch');
 
-(function loadPrefs(){
-  try{
-    const tf = localStorage.getItem('quicklot:tblTF'); if(tf) tfSel.value = tf;
-    const q  = localStorage.getItem('quicklot:tblQ');  if(q) searchEl.value = q;
-  }catch(e){}
-})();
-function savePrefs(){
-  try{
-    localStorage.setItem('quicklot:tblTF', tfSel.value);
-    localStorage.setItem('quicklot:tblQ', searchEl.value);
-  }catch(e){}
+function fmtNum(v){
+  return (v==null || !isFinite(v)) ? '—'
+    : (Math.abs(v)>=1000 ? v.toLocaleString(undefined,{maximumFractionDigits:2})
+                         : (+v).toFixed(3).replace(/\.?0+$/,''));
 }
 
-function fmtNum(v){
-  return (v==null || !isFinite(v)) ? '—' :
-         (Math.abs(v)>=1000 ? v.toLocaleString(undefined,{maximumFractionDigits:2}) : (+v).toFixed(3).replace(/\.?0+$/,''));
-}
+function savePrefs(){ try{
+  localStorage.setItem('quicklot:tblTF', tfSel.value);
+  localStorage.setItem('quicklot:tblQ', searchEl.value);
+} catch(e){} }
+
+(function loadPrefs(){ try{
+  const tf = localStorage.getItem('quicklot:tblTF'); if(tf) tfSel.value = tf;
+  const q  = localStorage.getItem('quicklot:tblQ');  if(q) searchEl.value = q;
+} catch(e){} })();
 
 function render(){
   const tf = tfSel.value;
@@ -119,6 +102,7 @@ function render(){
     const meta = SYMBOL_META[sym];
     const rec = src[sym];
     if(!rec) continue;
+
     if(q && !sym.includes(q) && !(meta.name||'').toUpperCase().includes(q)) continue;
 
     const tv = TICK_VALUE[sym];
@@ -144,10 +128,26 @@ function render(){
   savePrefs();
 }
 
-tfSel.addEventListener('change', render);
-searchEl.addEventListener('input', ()=>{ clearTimeout(window.__t); window.__t=setTimeout(render,120); });
+async function loadData(){
+  // הודעת טעינה קטנה
+  tbody.innerHTML = `<tr><td colspan="6" class="subtle">Loading market.json…</td></tr>`;
+  try{
+    const res = await fetch('market.json', {cache:'no-cache'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const j = await res.json();
+    DATA = { daily: j.daily||{}, hourly: j.hourly||{} };
+  }catch(e){
+    tbody.innerHTML = `<tr><td colspan="6" class="bad">Failed to load market.json (${e.message}).</td></tr>`;
+    return;
+  }
+  render();
+}
 
-render();
+tfSel.addEventListener('change', render);
+let t; searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(render,120); });
+
+loadData();
+
 </script>
 <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
 </body>
