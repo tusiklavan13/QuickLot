@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Table – QuickLot</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
+
 <nav>
   <div class="navwrap">
     <a class="brand" href="index.html">QuickLot</a>
-    <a href="market-table.html" data-nav="market-table">Market Table</a>
+    <a href="market-table.html" data-nav="market-table" class="active">Market Table</a>
     <a href="premium.html" data-nav="premium">Premium</a>
     <a href="terms.html" data-nav="terms">Terms</a>
     <a href="about.html" data-nav="about">About</a>
@@ -20,43 +20,38 @@
 
 <div class="container">
   <h1>Market Table</h1>
+
   <div class="card">
-    <div class="grid cols-2">
-      <div>
-       <div class="toolbar">
-  <div class="field">
-    <label for="timeframe">View</label>
-    <select id="timeframe">
-      <option value="daily">Daily</option>
-      <option value="hourly">Hourly</option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label for="symFilter">Symbol</label>
-    <select id="symFilter">
-      <option value="ALL">All symbols</option>
-    </select>
-  </div>
-
-  <div class="field grow">
-    <label for="tblSearch">Search</label>
-    <div class="input-wrap">
-      <span class="icon">🔎</span>
-      <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
-    </div>
-  </div>
-
-  <button class="btn" id="refreshBtn" type="button">Refresh</button>
-</div>
-<div class="hr"></div>
-
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="field">
+        <label for="timeframe">View</label>
+        <select id="timeframe">
+          <option value="daily">Daily</option>
+          <option value="hourly">Hourly</option>
         </select>
+      </div>
+
+      <div class="field">
+        <label for="symFilter">Symbol</label>
+        <select id="symFilter">
+          <option value="ALL">All symbols</option>
+        </select>
+      </div>
+
+      <div class="field grow">
+        <label for="tblSearch">Search</label>
+        <div class="input-wrap">
+          <span class="icon">🔎</span>
+          <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
+        </div>
+      </div>
+
+      <button class="btn" id="refreshBtn" type="button">Refresh</button>
     </div>
-     <div>
-      </div>
-      </div>
     <div class="hr"></div>
+
+    <!-- Table -->
     <div style="overflow:auto">
       <table class="table" id="marketTable">
         <thead>
@@ -72,32 +67,34 @@
         <tbody></tbody>
       </table>
     </div>
-    <p class="subtle">Tip: Use the search box to quickly filter. You can switch Daily/Hourly above.</p>
+
+    <p class="subtle">Tip: Use the search box to quickly filter. Switch Daily/Hourly above. Data loads from <code>market.json</code>.</p>
   </div>
 </div>
 
 <footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
 
 <script>
-
+// -------- Meta (names) + tick values (fallback for $) --------
 const SYMBOL_META = {
   MES:{name:"Micro E-mini S&P 500"},
   MNQ:{name:"Micro E-mini Nasdaq-100"},
   MYM:{name:"Micro Mini Dow"},
   M2K:{name:"Micro E-mini Russell 2000"},
   MGC:{name:"Micro Gold"},
-  MCL:{name:"Micro Crude Oil"}
+  MCL:{name:"Micro Crude Oil"},
+  // אפשר להוסיף כאן עוד שמות בהמשך...
 };
-// אם תרצה לחשב $ אוטומטית כשאין usd:
 const TICK_VALUE = { MES:1.25, MNQ:0.50, MYM:0.50, M2K:0.50, MGC:1.00, MCL:1.00 };
 
-// state
+// -------- State + helpers --------
 let DATA = { daily:{}, hourly:{} };
 
 const $ = s => document.querySelector(s);
-const tbody = $('#marketTable tbody');
-const tfSel = $('#timeframe');
-const searchEl = $('#tblSearch');
+const tbody     = $('#marketTable tbody');
+const tfSel     = $('#timeframe');
+const symSel    = $('#symFilter');
+const searchEl  = $('#tblSearch');
 
 function fmtNum(v){
   return (v==null || !isFinite(v)) ? '—'
@@ -105,31 +102,67 @@ function fmtNum(v){
                          : (+v).toFixed(3).replace(/\.?0+$/,''));
 }
 
+// ------- save / load prefs -------
 function savePrefs(){ try{
   localStorage.setItem('quicklot:tblTF', tfSel.value);
-  localStorage.setItem('quicklot:tblQ', searchEl.value);
+  localStorage.setItem('quicklot:tblQ',  searchEl.value);
+  localStorage.setItem('quicklot:tblSym', symSel.value);
 } catch(e){} }
 
 (function loadPrefs(){ try{
-  const tf = localStorage.getItem('quicklot:tblTF'); if(tf) tfSel.value = tf;
-  const q  = localStorage.getItem('quicklot:tblQ');  if(q) searchEl.value = q;
+  const tf  = localStorage.getItem('quicklot:tblTF');  if(tf)  tfSel.value  = tf;
+  const q   = localStorage.getItem('quicklot:tblQ');   if(q)   searchEl.value = q;
+  // sym נטען אחרי שנבנה ה-dropdown
 } catch(e){} })();
 
+// ------- build symbols dropdown (צעד 2) -------
+function buildSymbolOptions(){
+  const prev = localStorage.getItem('quicklot:tblSym') || symSel.value || 'ALL';
+
+  const set = new Set();
+  if (DATA.daily)  Object.keys(DATA.daily).forEach(k => set.add(k));
+  if (DATA.hourly) Object.keys(DATA.hourly).forEach(k => set.add(k));
+  if (window.SYMBOL_META) Object.keys(SYMBOL_META).forEach(k => set.add(k));
+
+  const arr = [...set].sort();
+  symSel.innerHTML =
+    `<option value="ALL">All symbols</option>` +
+    arr.map(s => `<option value="${s}">${s}</option>`).join('');
+
+  if (prev && (prev==='ALL' || set.has(prev))) symSel.value = prev;
+}
+
+// ------- render table -------
 function render(){
-  const tf = tfSel.value;
-  const q = (searchEl.value||'').trim().toUpperCase();
+  const tf   = tfSel.value;
+  const pick = symSel.value;                       // NEW: symbol picked
+  const q    = (searchEl.value||'').trim().toUpperCase();
+
   const src = DATA[tf]||{};
   const rows=[];
 
-  for(const sym of Object.keys(SYMBOL_META)){
-    const meta = SYMBOL_META[sym];
-    const rec = src[sym];
-    if(!rec) continue;
+  // נבנה רשימת סימבולים לעבור עליה:
+  const keys = new Set();
+  // אם נבחר סימבול ספציפי – רק אותו; אחרת הכול
+  if (pick && pick!=='ALL') {
+    keys.add(pick);
+  } else {
+    Object.keys(src).forEach(k=>keys.add(k));
+  }
+  // נעשיר משמות אם צריך
+  Object.keys(SYMBOL_META).forEach(k=>keys.add(k));
 
+  for(const sym of [...keys]){
+    const meta = SYMBOL_META[sym] || {name:sym};
+    const rec  = src[sym];
+    if(!rec) continue; // אין נתון לתקופה הזו
+
+    // חיפוש חופשי
     if(q && !sym.includes(q) && !(meta.name||'').toUpperCase().includes(q)) continue;
 
-    const tv = TICK_VALUE[sym];
+    const tv  = TICK_VALUE[sym];
     const usd = (rec.usd!=null) ? rec.usd : (isFinite(tv) ? rec.pips*tv : null);
+
     rows.push({sym, name:meta.name, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
   }
 
@@ -151,11 +184,11 @@ function render(){
   savePrefs();
 }
 
+// ------- load market.json -------
 async function loadData(){
-  // הודעת טעינה קטנה
   tbody.innerHTML = `<tr><td colspan="6" class="subtle">Loading market.json…</td></tr>`;
   try{
-    const res = await fetch('market.json', {cache:'no-cache'});
+    const res = await fetch('market.json?v=' + Date.now(), {cache:'no-cache'});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const j = await res.json();
     DATA = { daily: j.daily||{}, hourly: j.hourly||{} };
@@ -163,27 +196,30 @@ async function loadData(){
     tbody.innerHTML = `<tr><td colspan="6" class="bad">Failed to load market.json (${e.message}).</td></tr>`;
     return;
   }
+  buildSymbolOptions();   // <— צעד 2: לבנות את ה-dropdown אחרי שטענו נתונים
   render();
 }
 
+// ------- events -------
 tfSel.addEventListener('change', render);
-let t; searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(render,120); });
+symSel.addEventListener('change', render);
+let tt; searchEl.addEventListener('input', ()=>{ clearTimeout(tt); tt=setTimeout(render,120); });
+document.getElementById('refreshBtn').addEventListener('click', loadData);
 
+// init
 loadData();
-
+document.getElementById('y').textContent=new Date().getFullYear();
 </script>
-<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
-  <script>
-  // mark active link by URL
-  (function(){
-    const path = location.pathname.split('/').pop() || 'index.html';
-    document.querySelectorAll('nav a[href]').forEach(a=>{
-      const href = a.getAttribute('href');
-      if ((path==='index.html' && href==='index.html') || href===path){
-        a.classList.add('active');
-      }
-    });
-  })();
+
+<!-- סימון קישור פעיל (אם תרצה להשאיר) -->
+<script>
+(function(){
+  const path = location.pathname.split('/').pop() || 'market-table.html';
+  document.querySelectorAll('nav a[href]').forEach(a=>{
+    const href = a.getAttribute('href');
+    if (href===path) a.classList.add('active');
+  });
+})();
 </script>
 </body>
 </html>
