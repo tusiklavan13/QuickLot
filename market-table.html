@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Table – QuickLot</title>
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=6">
+<!-- OG/Icons אופציונלי אם כבר הוספת בכל העמודים -->
 </head>
 <body>
 
@@ -12,6 +14,10 @@
 <nav>
   <div class="navwrap">
     <a class="brand" href="index.html">QuickLot</a>
+    <a href="market-table.html" data-nav="market-table">Market Table</a>
+    <a href="premium.html" data-nav="premium">Premium</a>
+    <a href="terms.html" data-nav="terms">Terms</a>
+    <a href="about.html" data-nav="about">About</a>
     <a href="market-table.html" class="active">Market Table</a>
     <a href="premium.html">Premium</a>
     <a href="terms.html">Terms</a>
@@ -23,49 +29,29 @@
   <h1>Market Table</h1>
 
   <div class="card">
-    <!-- Controls -->
     <div class="grid cols-2">
       <div>
-        <label class="subtle" for="timeframe">View</label>
+        <label for="timeframe" class="subtle">View</label>
         <select id="timeframe">
           <option value="daily">Daily</option>
           <option value="hourly">Hourly</option>
+          <button class="btn" id="refreshBtn" type="button" style="margin-left:10px">Refresh</button>
         </select>
       </div>
-
-      <div class="grid" style="grid-template-columns: 1fr 1fr; gap:8px; align-items:end">
-        <div>
-          <label class="subtle" for="symFilter">Symbol</label>
-          <select id="symFilter">
-            <option value="ALL">All symbols</option>
-          </select> </div>
-
-  <div class="field">
-    <label for="symFilter">Symbol</label>
-    <select id="symFilter">
-      <option value="ALL">All symbols</option>
-    </select>
-  </div>
-
-  <div class="field grow">
-    <label for="tblSearch">Search</label>
-    <div class="input-wrap">
-      <span class="icon">🔎</span>
-      <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
-    </div>
-  </div>
-
-  <button class="btn" id="refreshBtn" type="button">Refresh</button>
-</div>
-<div class="hr"></div>
-
+      <div>
+        <label for="tblSearch" class="subtle">Search</label>
+        <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES, MGC">
+      <div style="display:flex; gap:8px; align-items:flex-end">
+        <div style="flex:1">
+          <label for="tblSearch" class="subtle">Search</label>
+          <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES, MGC">
         </div>
+        <button class="btn" id="refreshBtn" type="button">Refresh</button>
       </div>
     </div>
 
     <div class="hr"></div>
 
-    <!-- Table -->
     <div style="overflow:auto">
       <table class="table" id="marketTable">
         <thead>
@@ -81,6 +67,7 @@
         <tbody></tbody>
       </table>
     </div>
+    <p class="subtle">Tip: Use the search box to quickly filter. You can switch Daily/Hourly above.</p>
 
     <p class="subtle">Tip: Use search to filter. Switch Daily/Hourly above. Data loads from <code>market.json</code>.</p>
   </div>
@@ -89,91 +76,85 @@
 <footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
 
 <script>
-// ---- Optional name map (רק לשם יפה בעמודה "Name"; אם אין, יוצג ריק) ----
+
+// ====== symbol names (אפשר להרחיב כרצונך) ======
 const SYMBOL_META = {
-  MES:{name:"Micro E-mini S&P 500"}, MNQ:{name:"Micro E-mini Nasdaq-100"},
-  MYM:{name:"Micro Mini Dow"}, M2K:{name:"Micro E-mini Russell 2000"},
-  MGC:{name:"Micro Gold"}, SIL:{name:"Micro Silver"}, MHG:{name:"Micro Copper"},
-  MCL:{name:"Micro Crude Oil"}, MNG:{name:"Micro Nat Gas"},
-  ES:{name:"E-mini S&P 500"}, NQ:{name:"E-mini Nasdaq-100"},
-  YM:{name:"Mini Dow"}, RTY:{name:"E-mini Russell 2000"},
-  GC:{name:"Gold"}, SI:{name:"Silver"}, HG:{name:"Copper"}, CL:{name:"Crude Oil"}, NG:{name:"Nat Gas"},
-  RB:{name:"RBOB Gasoline"}, HO:{name:"Heating Oil"}, PL:{name:"Platinum"},
-  ZT:{name:"2Y Note"}, ZF:{name:"5Y Note"}, ZN:{name:"10Y Note"}, ZB:{name:"30Y Bond"}, UB:{name:"Ultra T-Bond"}, TN:{name:"Ultra 10Y"},
-  ZC:{name:"Corn"}, ZW:{name:"Wheat"}, ZS:{name:"Soybeans"}, ZM:{name:"Soybean Meal"}, ZL:{name:"Soybean Oil"},
-  "6A":{name:"AUD"}, "6B":{name:"GBP"}, "6C":{name:"CAD"}, "6E":{name:"EUR"},
-  "6J":{name:"JPY"}, "6S":{name:"CHF"}, "6N":{name:"NZD"}, "6M":{name:"MXN"}
+  MES:{name:"Micro E-mini S&P 500"},
+  MNQ:{name:"Micro E-mini Nasdaq-100"},
+  MYM:{name:"Micro Mini Dow"},
+  M2K:{name:"Micro E-mini Russell 2000"},
+  MGC:{name:"Micro Gold"},
+  MCL:{name:"Micro Crude Oil"}
 };
+// אם תרצה לחשב $ אוטומטית כשאין usd:
 
-// ---- Tick value map (כדי לחשב $ אם בקובץ יש רק pips/ticks) ----
-const TICK_VALUE = {
-  ES:12.5, MES:1.25, NQ:5, MNQ:0.5, YM:5, MYM:0.5, RTY:5, M2K:0.5,
-  GC:10, MGC:1, SI:25, SIL:1, HG:12.5, MHG:1.25, CL:10, MCL:1, NG:10, MNG:1, RB:4.2, HO:4.2, PL:5,
-  ZT:15.625, ZF:7.8125, ZN:15.625, ZB:31.25, UB:31.25, TN:31.25,
-  ZC:12.5, ZW:12.5, ZS:12.5, ZM:10, ZL:6,
-  "6A":6.25, "6B":6.25, "6C":10, "6E":12.5, "6J":12.5, "6S":12.5, "6N":10, "6M":5
-};
+// אם אין usd ב-market.json נחסם אוטומטית לפי ערך טיק:
+const TICK_VALUE = { MES:1.25, MNQ:0.50, MYM:0.50, M2K:0.50, MGC:1.00, MCL:1.00 };
 
-// ---- State & helpers ----
+// state
+// ====== state ======
 let DATA = { daily:{}, hourly:{} };
+
 const $ = s => document.querySelector(s);
 const tbody = $('#marketTable tbody');
 const tfSel = $('#timeframe');
-const symFilter = $('#symFilter');
 const searchEl = $('#tblSearch');
 
+(function loadPrefs(){
+  try{
+    const tf = localStorage.getItem('quicklot:tblTF'); if(tf) tfSel.value = tf;
+    const q  = localStorage.getItem('quicklot:tblQ');  if(q) searchEl.value = q;
+  }catch(e){}
+})();
+function savePrefs(){
+  try{
+    localStorage.setItem('quicklot:tblTF', tfSel.value);
+    localStorage.setItem('quicklot:tblQ', searchEl.value);
+  }catch(e){}
+}
+
+// ====== render ======
 function fmtNum(v){
   return (v==null || !isFinite(v)) ? '—'
+    : (Math.abs(v)>=1000 ? v.toLocaleString(undefined,{maximumFractionDigits:2})
+                         : (+v).toFixed(3).replace(/\.?0+$/,''));
     : (Math.abs(v)>=1000 ? Number(v).toLocaleString(undefined,{maximumFractionDigits:2})
                          : Number(v).toFixed(3).replace(/\.?0+$/,''));
 }
 
-// Fill the symbol dropdown from DATA
-function populateSymFilterFromData(){
-  if(!symFilter) return;
-  symFilter.innerHTML = '<option value="ALL">All symbols</option>';
-  // נעדיף daily; אם אין, ניקח hourly
-  const base = DATA.daily && Object.keys(DATA.daily).length ? DATA.daily : (DATA.hourly||{});
-  const syms = Object.keys(base).sort();
-  for(const s of syms){
-    const opt = document.createElement('option');
-    const nice = SYMBOL_META[s]?.name ? ` — ${SYMBOL_META[s].name}` : '';
-    opt.value = s;
-    opt.textContent = s + nice;
-    symFilter.appendChild(opt);
-  }
-}
+function savePrefs(){ try{
+  localStorage.setItem('quicklot:tblTF', tfSel.value);
+  localStorage.setItem('quicklot:tblQ', searchEl.value);
+} catch(e){} }
+
+(function loadPrefs(){ try{
+  const tf = localStorage.getItem('quicklot:tblTF'); if(tf) tfSel.value = tf;
+  const q  = localStorage.getItem('quicklot:tblQ');  if(q) searchEl.value = q;
+} catch(e){} })();
 
 function render(){
-  const tf  = tfSel.value;
-  const q   = (searchEl.value||'').trim().toUpperCase();
-  const only = symFilter?.value || 'ALL';
+  const tf = tfSel.value;
+  const q = (searchEl.value||'').trim().toUpperCase();
+  const src = DATA[tf]||{};
+  const rows=[];
 
-  const src = DATA[tf] || {};
-  const rows = [];
-
-  // נרוץ על מה שבאמת יש בקובץ הנתונים
-  const fromData = Object.keys(src).sort();
-  const loopSyms = (only !== 'ALL') ? [only] : fromData;
-
-  for(const sym of loopSyms){
+  for(const sym of Object.keys(SYMBOL_META)){
+    const meta = SYMBOL_META[sym];
     const rec = src[sym];
     if(!rec) continue;
 
-    const name = SYMBOL_META[sym]?.name || '';
-    if(q && !sym.includes(q) && !name.toUpperCase().includes(q)) continue;
+    if(q && !sym.includes(q) && !(meta.name||'').toUpperCase().includes(q)) continue;
 
-    const tv  = TICK_VALUE[sym];
+    const tv = TICK_VALUE[sym];
     const usd = (rec.usd!=null) ? rec.usd : (isFinite(tv) ? rec.pips*tv : null);
-
-    rows.push({sym, name, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
+    rows.push({sym, name:meta.name, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
   }
 
   rows.sort((a,b)=>(b.pips||0)-(a.pips||0));
 
   tbody.innerHTML = rows.map(r=>{
     const ttxt = r.trend==='up'?'▲ up' : r.trend==='down'?'▼ down' : '—';
-    const tcls = r.trend==='up'?'good'   : r.trend==='down'?'bad'     : '';
+    const tcls = r.trend==='up'?'good' : r.trend==='down'?'bad' : '';
     return `<tr>
       <td>${r.sym}</td>
       <td>${r.name}</td>
@@ -183,17 +164,20 @@ function render(){
       <td style="text-align:right">${r.pct!=null?(fmtNum(r.pct)+'%'):'—'}</td>
     </tr>`;
   }).join('');
+
+  savePrefs();
 }
 
-// Load data from market.json
+// ====== data load from market.json ======
 async function loadData(){
+  // הודעת טעינה קטנה
   tbody.innerHTML = `<tr><td colspan="6" class="subtle">Loading market.json…</td></tr>`;
   try{
+    const res = await fetch('market.json', {cache:'no-cache'});
     const res = await fetch('market.json?v=' + Date.now(), {cache:'no-cache'});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const j = await res.json();
     DATA = { daily: j.daily||{}, hourly: j.hourly||{} };
-    populateSymFilterFromData();   // חשוב: לבנות את הרשימה אחרי שהנתונים קיימים
   }catch(e){
     tbody.innerHTML = `<tr><td colspan="6" class="bad">Failed to load market.json (${e.message}).</td></tr>`;
     return;
@@ -201,15 +185,28 @@ async function loadData(){
   render();
 }
 
-// Events
+// events
 tfSel.addEventListener('change', render);
-symFilter.addEventListener('change', render);
 let t; searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(render,120); });
 document.getElementById('refreshBtn').addEventListener('click', loadData);
 
-// Init
+// init
 loadData();
-document.getElementById('y').textContent = new Date().getFullYear();
+
+</script>
+<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+  <script>
+  // mark active link by URL
+  (function(){
+    const path = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('nav a[href]').forEach(a=>{
+      const href = a.getAttribute('href');
+      if ((path==='index.html' && href==='index.html') || href===path){
+        a.classList.add('active');
+      }
+    });
+  })();
+document.getElementById('y').textContent=new Date().getFullYear();
 </script>
 
 </body>
