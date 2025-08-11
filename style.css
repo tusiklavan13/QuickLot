@@ -100,3 +100,46 @@ nav a.active{
   .field{ min-width:120px }
   .btn{ width:100% }
 }
+/* ===== Mobile polish (add at the end of style.css) ===== */
+
+/* גלילה רוחבית נוחה בטבלאות בנייד */
+.table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch }
+.table{ width:100%; border-collapse:collapse; min-width:720px } /* שומר על טבלה רחבה -> תגלל בנייד */
+.table th, .table td{ padding:10px 12px; font-size:14px }
+
+/* טופ-בר: גריד נח לרוחב, נשבר יפה לנייד */
+.toolbar{ display:grid; grid-template-columns:140px 220px 1fr auto; gap:12px; align-items:end }
+.field{ display:flex; flex-direction:column; gap:6px; min-width:140px }
+.field.grow{ flex:1 1 auto }
+.field label{ font-size:.8rem; color:var(--muted); font-weight:600 }
+.toolbar select,.toolbar input{
+  height:40px; padding:0 12px; border:1px solid var(--border);
+  background:var(--card2, rgba(255,255,255,.03)); color:var(--text);
+  border-radius:10px; outline:none;
+}
+.toolbar select:focus,.toolbar input:focus{
+  box-shadow:0 0 0 2px rgba(126,240,212,.25); border-color:#7ef0d4
+}
+.input-wrap{ position:relative }
+.input-wrap .icon{ position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.7; pointer-events:none; font-size:.9rem }
+.input-wrap input{ padding-left:32px }
+.btn{ height:40px; padding:0 16px; border-radius:12px }
+
+/* nav גמיש שלא יישבר בשורה אחת בנייד */
+nav .navwrap{ display:flex; flex-wrap:wrap; gap:10px }
+
+/* נק’ שבירה לטאבלטים */
+@media (max-width: 900px){
+  .toolbar{ grid-template-columns:1fr 1fr }
+  .btn{ width:100% }
+}
+
+/* מובייל קטן */
+@media (max-width: 600px){
+  .container{ padding:12px }
+  .card{ padding:14px }
+  h1{ font-size:20px }
+  .toolbar{ display:flex; flex-direction:column; align-items:stretch; gap:10px }
+  .toolbar select,.toolbar input,.btn{ height:44px; font-size:16px } /* מקלדת/טאצ' נוחים ב-iOS */
+}
+
