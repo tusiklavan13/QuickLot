@@ -68,3 +68,35 @@ nav a.active{
   color: var(--accent);
   border: 1px solid rgba(126,240,212,.35);
 }
+/* Toolbar – clean, consistent sizing */
+.toolbar{
+  display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;
+}
+.field{ display:flex; flex-direction:column; gap:6px; min-width:150px }
+.field.grow{ flex:1 1 260px }
+.field label{ font-size:.8rem; color:var(--muted); font-weight:600 }
+.toolbar select,
+.toolbar input{
+  height:40px; padding:0 12px; border:1px solid var(--border);
+  background:var(--card2, rgba(255,255,255,.03)); color:var(--text);
+  border-radius:10px; outline:none;
+}
+.toolbar select:focus,
+.toolbar input:focus{ box-shadow:0 0 0 2px rgba(126,240,212,.25); border-color:#7ef0d4 }
+
+.btn{ height:40px; padding:0 16px; border-radius:12px }
+
+/* Search with icon */
+.input-wrap{ position:relative }
+.input-wrap .icon{
+  position:absolute; left:10px; top:50%; transform:translateY(-50%);
+  opacity:.7; pointer-events:none; font-size:.9rem
+}
+.input-wrap input{ padding-left:32px }
+
+/* Compact on small screens */
+@media (max-width:700px){
+  .toolbar{ gap:10px }
+  .field{ min-width:120px }
+  .btn{ width:100% }
+}
