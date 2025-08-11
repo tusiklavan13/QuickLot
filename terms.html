@@ -1,88 +1,56 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Terms & Conditions – QuickLot</title>
-  <link rel="stylesheet" href="style.css?v=12">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms & Privacy – QuickLot</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
-
-<!-- NAV -->
 <nav>
   <div class="navwrap">
     <a class="brand" href="index.html">QuickLot</a>
-    <a href="market-table.html">Market Table</a>
-    <a href="premium.html">Premium</a>
-    <a href="terms.html" class="active">Terms</a>
-    <a href="about.html">About</a>
+    <a href="market-table.html" data-nav="market-table">Market Table</a>
+    <a href="premium.html" data-nav="premium">Premium</a>
+    <a href="terms.html" data-nav="terms">Terms</a>
+    <a href="about.html" data-nav="about">About</a>
   </div>
 </nav>
 
 <div class="container">
-  <h1>Terms & Conditions</h1>
+  <h1>Terms of Use</h1>
+  <div class="card">
+    <p><b>No investment advice.</b> QuickLot is provided for informational and educational purposes only and does not constitute financial advice. Futures trading involves substantial risk of loss and is not suitable for all investors.</p>
+    <p><b>As-is.</b> The service is provided “as is” without warranties of any kind. We do not guarantee accuracy, completeness, or timeliness of data (including fees or tick values). Users must verify all inputs and outputs before trading.</p>
+    <p><b>User responsibility.</b> You are solely responsible for your use of the tool and compliance with applicable laws and broker terms.</p>
+  </div>
 
+  <h2>Privacy Policy</h2>
+  <div class="card">
+    <p><b>No personal data collection.</b> We do not run servers or store personal information. The site may save your last inputs locally on your device using <code>localStorage</code> so you don’t have to retype them. You can clear your browser storage to remove it.</p>
+    <p>If you later enable analytics or ads, we will update this page and clearly explain what is collected and why.</p>
+  </div>
 
-    <h2>1. General Information</h2>
-    <p>
-      The information and tools provided by QuickLot are for informational purposes only.
-      We are not responsible for any trading or investment decisions made based on this tool.
-      Use at your own risk.
-    </p>
-
-    <h2>2. No Financial Advice</h2>
-    <p>
-      QuickLot does not provide financial, investment, or trading advice.
-      All calculations and data are for demonstration purposes only.
-    </p>
-
-    <h2>3. Accuracy of Information</h2>
-    <p>
-      While we strive to ensure data accuracy, we do not guarantee completeness or timeliness.
-      Market data, fees, and other information may change without notice.
-    </p>
-
-    <h2>4. Limitation of Liability</h2>
-    <p>
-      QuickLot and its creators are not liable for any direct, indirect, incidental, or consequential
-      damages resulting from the use or inability to use this tool.
-    </p>
-
-    <h2>5. Attribution & Trademarks</h2>
-    <p>
-      All product names, logos, and brands are property of their respective owners.
-      Use of these names, logos, and brands does not imply endorsement.
-    </p>
-
-    <h2>6. Third-Party Links</h2>
-    <p>
-      This tool may contain links to external websites or resources. We do not control these and are
-      not responsible for their content or practices. Visiting them is at your own risk.
-    </p>
-
-    <h2>7. Cookies & Analytics</h2>
-    <p>
-      We do not collect personal data. We may use tools like Google Analytics to track aggregated site
-      usage. We do <strong>not</strong> use cookies to identify users individually. Should this change,
-      we will clearly update this policy.
-    </p>
-
-    <h2>8. Copyright</h2>
-    <p>
-      © <span id="y1"></span> QuickLot. All rights reserved. For calculation purposes only. No financial advice.
-    </p>
+  <h2>Attribution & Trademarks</h2>
+  <div class="card">
+    <p>All product names, symbols, and trademarks are property of their respective owners. Use here is nominative and for identification only.</p>
   </div>
 </div>
 
-<footer>© <span id="y2"></span> QuickLot. All rights reserved.</footer>
-
-<script>
-  // שנה נוכחית + עדכון תאריך "Last updated" אם תרצה לשנות אוטומטית
-  const y = new Date().getFullYear();
-  document.getElementById('y1').textContent = y;
-  document.getElementById('y2').textContent = y;
-  // אם תרצה אוטומטי: document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+<footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
+<script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+  <script>
+  // mark active link by URL
+  (function(){
+    const path = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('nav a[href]').forEach(a=>{
+      const href = a.getAttribute('href');
+      if ((path==='index.html' && href==='index.html') || href===path){
+        a.classList.add('active');
+      }
+    });
+  })();
 </script>
-
 </body>
 </html>
