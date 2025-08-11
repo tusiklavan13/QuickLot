@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Table – QuickLot</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <nav>
@@ -22,11 +23,34 @@
   <div class="card">
     <div class="grid cols-2">
       <div>
-        <label for="timeframe" class="subtle">View</label>
-        <select id="timeframe">
-          <option value="daily">Daily</option>
-          <option value="hourly">Hourly</option>
-          <button class="btn" id="refreshBtn" type="button" style="margin-left:10px">Refresh</button>
+       <div class="toolbar">
+  <div class="field">
+    <label for="timeframe">View</label>
+    <select id="timeframe">
+      <option value="daily">Daily</option>
+      <option value="hourly">Hourly</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="symFilter">Symbol</label>
+    <select id="symFilter">
+      <option value="ALL">All symbols</option>
+    </select>
+  </div>
+
+  <div class="field grow">
+    <label for="tblSearch">Search</label>
+    <div class="input-wrap">
+      <span class="icon">🔎</span>
+      <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
+    </div>
+  </div>
+
+  <button class="btn" id="refreshBtn" type="button">Refresh</button>
+</div>
+<div class="hr"></div>
+
         </select>
       </div>
       <div>
