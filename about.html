@@ -1,6 +1,19 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Google tag (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-QQQ88SMPVS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-XXXX', {
+    // מיותר אבל נחמד לפיתוח:
+    'debug_mode': (location.hostname === 'localhost')
+    // GA4 כבר עושה anonymize IP אוטומטית
+  });
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>About – QuickLot</title>
