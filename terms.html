@@ -1,88 +1,92 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Terms & Conditions - QuickLot</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms & Conditions – QuickLot</title>
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 
-<header>
-  <h1>Terms & Conditions</h1>
-</header>
+<!-- NAV -->
+<nav>
+  <div class="navwrap">
+    <a class="brand" href="index.html">QuickLot</a>
+    <a href="market-table.html">Market Table</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="premium.html">Premium</a>
+    <a href="terms.html" class="active">Terms</a>
+    <a href="about.html">About</a>
+  </div>
+</nav>
 
-<main>
-  <section>
+<div class="container">
+  <h1>Terms & Conditions</h1>
+
+  <div class="card">
+    <p class="subtle">Last updated: <span id="lastUpdated">August 2025</span></p>
+    <div class="hr"></div>
+
     <h2>1. General Information</h2>
     <p>
-      The information and tools provided by QuickLot are for informational purposes only.  
-      We are not responsible for any trading or investment decisions made based on this tool.  
+      The information and tools provided by QuickLot are for informational purposes only.
+      We are not responsible for any trading or investment decisions made based on this tool.
       Use at your own risk.
     </p>
-  </section>
 
-  <section>
     <h2>2. No Financial Advice</h2>
     <p>
-      QuickLot does not provide financial, investment, or trading advice.  
+      QuickLot does not provide financial, investment, or trading advice.
       All calculations and data are for demonstration purposes only.
     </p>
-  </section>
 
-  <section>
     <h2>3. Accuracy of Information</h2>
     <p>
-      While we strive to ensure data accuracy, we do not guarantee completeness or timeliness.  
+      While we strive to ensure data accuracy, we do not guarantee completeness or timeliness.
       Market data, fees, and other information may change without notice.
     </p>
-  </section>
 
-  <section>
     <h2>4. Limitation of Liability</h2>
     <p>
-      QuickLot and its creators are not liable for any direct, indirect, incidental,  
-      or consequential damages resulting from the use or inability to use this tool.
+      QuickLot and its creators are not liable for any direct, indirect, incidental, or consequential
+      damages resulting from the use or inability to use this tool.
     </p>
-  </section>
 
-  <section>
     <h2>5. Attribution & Trademarks</h2>
     <p>
-      All product names, logos, and brands are property of their respective owners.  
+      All product names, logos, and brands are property of their respective owners.
       Use of these names, logos, and brands does not imply endorsement.
     </p>
-  </section>
 
-  <section>
     <h2>6. Third-Party Links</h2>
     <p>
-      This tool may contain links to external websites or resources. We do not control these  
-      and are not responsible for their content or practices. Visiting them is at your own risk.
+      This tool may contain links to external websites or resources. We do not control these and are
+      not responsible for their content or practices. Visiting them is at your own risk.
     </p>
-  </section>
 
-  <section>
     <h2>7. Cookies & Analytics</h2>
     <p>
-      We do not collect personal data. We may use tools like Google Analytics to track  
-      aggregated site usage. We do <strong>not</strong> use cookies to identify users individually.  
-      Should this change, we will clearly update this policy.
+      We do not collect personal data. We may use tools like Google Analytics to track aggregated site
+      usage. We do <strong>not</strong> use cookies to identify users individually. Should this change,
+      we will clearly update this policy.
     </p>
-  </section>
 
-  <section>
     <h2>8. Copyright</h2>
     <p>
-      © 2025 QuickLot. All rights reserved.  
-      For calculation purposes only. No financial advice.
+      © <span id="y1"></span> QuickLot. All rights reserved. For calculation purposes only. No financial advice.
     </p>
-  </section>
-</main>
+  </div>
+</div>
 
-<footer>
-  <p>© 2025 QuickLot. All rights reserved.</p>
-</footer>
+<footer>© <span id="y2"></span> QuickLot. All rights reserved.</footer>
+
+<script>
+  // שנה נוכחית + עדכון תאריך "Last updated" אם תרצה לשנות אוטומטית
+  const y = new Date().getFullYear();
+  document.getElementById('y1').textContent = y;
+  document.getElementById('y2').textContent = y;
+  // אם תרצה אוטומטי: document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+</script>
 
 </body>
 </html>
