@@ -40,9 +40,34 @@
             <option value="ALL">All symbols</option>
           </select>
         </div>
-        <div style="display:flex; gap:8px; align-items:end">
-          <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
-          <button class="btn" id="refreshBtn" type="button">Refresh</button>
+        <div class="toolbar">
+  <div class="field">
+    <label for="timeframe">View</label>
+    <select id="timeframe">
+      <option value="daily">Daily</option>
+      <option value="hourly">Hourly</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="symFilter">Symbol</label>
+    <select id="symFilter">
+      <option value="ALL">All symbols</option>
+    </select>
+  </div>
+
+  <div class="field grow">
+    <label for="tblSearch">Search</label>
+    <div class="input-wrap">
+      <span class="icon">🔎</span>
+      <input id="tblSearch" placeholder="Type to filter e.g. MNQ, MES">
+    </div>
+  </div>
+
+  <button class="btn" id="refreshBtn" type="button">Refresh</button>
+</div>
+<div class="hr"></div>
+
         </div>
       </div>
     </div>
