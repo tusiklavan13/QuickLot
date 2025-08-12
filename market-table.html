@@ -167,18 +167,18 @@ function render(){
   if(!rows.length){
     tbody.innerHTML = `<tr><td colspan="6" class="subtle">No rows to show.</td></tr>`;
   } else {
-    tbody.innerHTML = rows.map(r=>{
-      const ttxt = r.trend==='up'?'▲ up' : r.trend==='down'?'▼ down' : '—';
-      const tcls = r.trend==='up'?'good' : r.trend==='down'?'bad' : '';
-      return `<tr>
-        <td>${r.sym}</td>
-        <td>${r.name}</td>
-        <td class="${tcls}" style="text-align:right">${ttxt}</td>
-        <td style="text-align:right">${fmtNum(r.pips)}</td>
-        <td style="text-align:right">${r.usd!=null?('$'+fmtNum(r.usd)):'—'}</td>
-        <td style="text-align:right">${r.pct!=null?(fmtNum(r.pct)+'%'):'—'}</td>
-      </tr>`;
-    }).join('');
+   tbody.innerHTML = rows.map(r=wireRowClicks();>{
+  const ttxt = r.trend==='up'?'▲ up' : r.trend==='down'?'▼ down' : '—';
+  const tcls = r.trend==='up'?'good' : r.trend==='down'?'bad' : '';
+  return `<tr class="data-row" data-sym="${r.sym}">
+    <td>${r.sym}</td>
+    <td>${r.name}</td>
+    <td class="${tcls}" style="text-align:right">${ttxt}</td>
+    <td style="text-align:right">${fmtNum(r.pips)}</td>
+    <td style="text-align:right">${r.usd!=null?('$'+fmtNum(r.usd)):'—'}</td>
+    <td style="text-align:right">${r.pct!=null?(fmtNum(r.pct)+'%'):'—'}</td>
+  </tr>`;
+}).join('');
   }
   savePrefs();
 }
@@ -245,6 +245,71 @@ symSel.addEventListener('change', ()=>{
   if(v && v!=='ALL') drawVolChart(v); else hideVol();
 });
 loadHistory().then(()=>{ const v = symSel.value; if(v && v!=='ALL') drawVolChart(v); });
+</script>
+<script>
+// נטען היסטוריה פעם אחת מהקובץ market-history.json
+let VOL = {}, ROW_CHARTS = new Map(); // sym -> Chart instance
+
+async function loadHistory(){
+  try{
+    const res = await fetch('market-history.json?v=' + Date.now(), {cache:'no-cache'});
+    if(res.ok) VOL = await res.json();
+  }catch(e){ VOL = {}; }
+}
+loadHistory();
+
+// מצייר גרף בתוך שורת הפירוט
+function drawRowChart(sym, canvas){
+  const rows = VOL[sym];
+  if(!rows || rows.length < 2){
+    canvas.parentElement.innerHTML = `<div class="subtle">No history found for <b>${sym}</b>.</div>`;
+    return;
+  }
+  const ctx = canvas.getContext('2d');
+  const labels = rows.map(r=>r[0]);
+  const data   = rows.map(r=>r[1]);
+
+  if(ROW_CHARTS.has(sym)){ ROW_CHARTS.get(sym).destroy(); ROW_CHARTS.delete(sym); }
+
+  const chart = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[{ label:'Pips/Ticks', data, tension:.25, borderWidth:2, pointRadius:0 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{ x:{ ticks:{ maxTicksLimit:6 } }, y:{ beginAtZero:false } },
+      plugins:{ legend:{ display:false } }
+    }
+  });
+  ROW_CHARTS.set(sym, chart);
+}
+
+// פותח/סוגר שורת פירוט מתחת לרו
+function toggleDetailRow(tr){
+  const sym  = tr.dataset.sym;
+  const next = tr.nextElementSibling;
+
+  // אם כבר פתוח — נסגור ונשמיד גרף
+  if(next && next.classList.contains('detail-row')){
+    if(ROW_CHARTS.has(sym)){ ROW_CHARTS.get(sym).destroy(); ROW_CHARTS.delete(sym); }
+    next.remove();
+    return;
+  }
+
+  // נפתח חדשה
+  const detail = document.createElement('tr');
+  detail.className = 'detail-row';
+  detail.innerHTML = `<td colspan="6"><div class="chartbox"><canvas id="rowchart-${sym}"></canvas></div></td>`;
+  tr.insertAdjacentElement('afterend', detail);
+
+  const canvas = document.getElementById(`rowchart-${sym}`);
+  drawRowChart(sym, canvas);
+}
+
+// מחבר מאזיני־קליק לכל השורות שנבנו עכשיו
+function wireRowClicks(){
+  document.querySelectorAll('#marketTable tbody tr.data-row')
+    .forEach(tr => tr.onclick = ()=> toggleDetailRow(tr));
+}
 </script>
 
 <!-- nav hamburger -->
