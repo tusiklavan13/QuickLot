@@ -232,6 +232,63 @@ document.getElementById('refreshBtn').addEventListener('click', loadData);
 loadData();
 document.getElementById('y').textContent=new Date().getFullYear();
 </script>
+<script>
+// ===== Volatility chart logic =====
+let VOL = {};     // market-history.json content
+let CHART = null; // Chart.js instance
+
+async function loadHistory(){
+  try{
+    const res = await fetch('market-history.json?v=' + Date.now(), {cache:'no-cache'});
+    if(res.ok) VOL = await res.json();
+  }catch(e){ VOL = {}; }
+}
+
+function hideVol(){ document.getElementById('volCard').classList.remove('show'); }
+
+function drawVolChart(sym){
+  const card  = document.getElementById('volCard');
+  const title = document.getElementById('volTitle');
+  if (!VOL[sym] || VOL[sym].length < 2){ hideVol(); return; }
+
+  const rows   = VOL[sym];
+  const labels = rows.map(r => r[0]);   // תאריכים
+  const data   = rows.map(r => r[1]);   // ערכים (pips/ticks)
+
+  title.textContent = `Volatility – ${sym}`;
+  const ctx = document.getElementById('volChart').getContext('2d');
+
+  if (CHART) CHART.destroy();
+  CHART = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ label:'Pips/Ticks', data, tension:.25, borderWidth:2, pointRadius:0 }]
+    },
+    options: {
+      responsive:true,
+      maintainAspectRatio:false,
+      scales: { x:{ ticks:{ maxTicksLimit:6 } }, y:{ beginAtZero:false } },
+      plugins: { legend:{ display:false }, tooltip:{ intersect:false, mode:'index' } }
+    }
+  });
+
+  card.classList.add('show');
+}
+
+// כשמשתמש בוחר סימבול
+document.getElementById('symFilter').addEventListener('change', () => {
+  const v = document.getElementById('symFilter').value;
+  if (v && v !== 'ALL') drawVolChart(v); else hideVol();
+});
+
+// טוענים היסטוריה ברקע כשעמוד נטען
+loadHistory().then(()=>{
+  // אם כבר נבחר סימבול ספציפי (משמירת מצב), נצייר אוטומטית
+  const v = document.getElementById('symFilter').value;
+  if (v && v !== 'ALL') drawVolChart(v);
+});
+</script>
 
 <!-- סימון קישור פעיל (אם תרצה להשאיר) -->
 <script>
