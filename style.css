@@ -142,4 +142,19 @@ nav .navwrap{ display:flex; flex-wrap:wrap; gap:10px }
   .toolbar{ display:flex; flex-direction:column; align-items:stretch; gap:10px }
   .toolbar select,.toolbar input,.btn{ height:44px; font-size:16px } /* מקלדת/טאצ' נוחים ב-iOS */
 }
+/* === Volatility chart card === */
+#volCard{ margin-top:16px; display:none }
+#volCard.show{ display:block }
+#volCard .header{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px }
+#volCard .badge{ font-size:.75rem; padding:4px 8px; border:1px solid var(--border); border-radius:999px; background:rgba(126,240,212,.12); color:#7ef0d4 }
+#volCard canvas{ width:100% !important; height:280px !important }
+#volCard .subtle{ margin-top:8px }
+
+@media (max-width:600px){
+  #volCard canvas{ height:220px !important }
+}
+
+/* גלילת טבלה מסודרת במובייל */
+.table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch }
+.table{ width:100%; border-collapse:collapse; min-width:720px }
 
