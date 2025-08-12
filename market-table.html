@@ -226,7 +226,6 @@ document.getElementById('y').textContent=new Date().getFullYear();
 
 <!-- Volatility chart logic -->
 <script>
-let VOL = {}, CHART = null;
 async function loadHistory(){
   try{
     const res = await fetch('market-history.json?v=' + Date.now(), {cache:'no-cache'});
@@ -260,6 +259,67 @@ symSel.addEventListener('change', ()=>{
 });
 loadHistory().then(()=>{ const v = symSel.value; if(v && v!=='ALL') drawVolChart(v); });
 </script>
+  <script>
+/* --- row charts under table --- */
+const ROW_CHARTS = new Map();
+
+function wireRowClicks(){
+  document.querySelectorAll('#marketTable tbody tr.data-row')
+    .forEach(tr => tr.onclick = ()=> toggleDetailRow(tr));
+}
+
+function toggleDetailRow(tr){
+  const sym  = tr.dataset.sym;
+  const next = tr.nextElementSibling;
+
+  // סגירה אם כבר פתוח
+  if (next && next.classList.contains('detail-row')){
+    const prev = ROW_CHARTS.get(sym);
+    if (prev){ prev.destroy(); ROW_CHARTS.delete(sym); }
+    next.remove();
+    return;
+  }
+
+  // פתיחה
+  const detail = document.createElement('tr');
+  detail.className = 'detail-row';
+  detail.innerHTML = `<td colspan="6"><div class="chartbox">
+      <canvas id="rowchart-${sym}"></canvas></div></td>`;
+  tr.insertAdjacentElement('afterend', detail);
+
+  drawRowChart(sym, document.getElementById(`rowchart-${sym}`));
+}
+
+function drawRowChart(sym, canvas){
+  // משתמשים ב-VOL הקיים ש-loadHistory() מילא
+  const rows = VOL[sym];
+  if (!rows || rows.length < 2){
+    canvas.parentElement.innerHTML =
+      `<div class="subtle">No history found for <b>${sym}</b>.</div>`;
+    return;
+  }
+
+  const labels = rows.map(r=>r[0]);
+  const data   = rows.map(r=>r[1]);
+  const ctx    = canvas.getContext('2d');
+
+  const prev = ROW_CHARTS.get(sym);
+  if (prev){ prev.destroy(); }
+
+  const chart = new Chart(ctx,{
+    type:'line',
+    data:{ labels,
+      datasets:[{ label:'Pips/Ticks', data, tension:.25, borderWidth:2, pointRadius:0 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ ticks:{ maxTicksLimit:6 } }, y:{ beginAtZero:false } }
+    }
+  });
+  ROW_CHARTS.set(sym, chart);
+}
+</script>
+
 <script>
 // נטען היסטוריה פעם אחת מהקובץ market-history.json
 let VOL = {}, ROW_CHARTS = new Map(); // sym -> Chart instance
