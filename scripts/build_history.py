@@ -5,6 +5,24 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 import yfinance as yf
 
+import json, pathlib
+
+MARKET_JSON = pathlib.Path("market.json")
+
+def load_symbols_from_market():
+    """קורא את כל הסימבולים שמופיעים ב-daily/hourly ב-market.json"""
+    syms = set()
+    if MARKET_JSON.exists():
+        j = json.loads(MARKET_JSON.read_text(encoding="utf-8"))
+        for section in ("daily","hourly"):
+            if section in j and isinstance(j[section], dict):
+                syms.update(j[section].keys())
+    return sorted(syms)
+
+def guess_yf_ticker(sym: str) -> str:
+    """אם אין override במפה – ננסה פשוט sym+'=F'."""
+    return YF_MAP.get(sym, f"{sym}=F")
+
 # מיוחד: override כששם הטיקר ב-Yahoo לא זהה לשם אצלך.
 # לכל השאר נשתמש כברירת-מחדל sym+"=F" (ראה שלב 2).
 YF_MAP = {
@@ -118,15 +136,23 @@ def build_one(sym: str, yf_ticker: str):
     return series
 
 def main():
+    # 1) נטען כל הסימבולים שיש לך בטבלה
+    all_syms = load_symbols_from_market()
+    if not all_syms:
+        all_syms = sorted(YF_MAP.keys())  # fallback
+
     all_series = {}
-    for sym, yf_ticker in YF_MAP.items():
+    for sym in all_syms:
+        yf_ticker = guess_yf_ticker(sym)
         try:
             s = build_one(sym, yf_ticker)
             if s and len(s) >= 2:
                 all_series[sym] = s
         except Exception as e:
             print(f"ERROR {sym}: {e}")
-            time.sleep(2)
+            time.sleep(1)
+    ...
+
 
     meta = {
         "_meta": {
