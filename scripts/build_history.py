@@ -5,16 +5,51 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 import yfinance as yf
 
-# מפה: הסימבול אצלך -> הטיקר ביָאהו (E-mini / Micro + סחורות עיקריות)
+# מיוחד: override כששם הטיקר ב-Yahoo לא זהה לשם אצלך.
+# לכל השאר נשתמש כברירת-מחדל sym+"=F" (ראה שלב 2).
 YF_MAP = {
-    # Micros
+    # Micros ↔ E-minis / Commodities
     "MES":"ES=F", "MNQ":"NQ=F", "MYM":"YM=F", "M2K":"RTY=F",
     "MGC":"GC=F", "MCL":"CL=F", "MHG":"HG=F", "SIL":"SI=F", "MNG":"NG=F",
 
-    # E-minis / רגילים
     "ES":"ES=F", "NQ":"NQ=F", "YM":"YM=F", "RTY":"RTY=F",
     "GC":"GC=F", "SI":"SI=F", "HG":"HG=F", "CL":"CL=F", "NG":"NG=F",
+    "RB":"RB=F", "HO":"HO=F", "PL":"PL=F",
+
+    # Treasuries (Yahoo מחזיק אותם)
+    "ZT":"ZT=F", "ZF":"ZF=F", "ZN":"ZN=F", "ZB":"ZB=F", "UB":"UB=F", "TN":"TN=F",
+
+    # Grains
+    "ZC":"ZC=F", "ZW":"ZW=F", "ZS":"ZS=F", "ZM":"ZM=F", "ZL":"ZL=F",
+
+    # FX futures (CME 6*)
+    "6A":"6A=F", "6B":"6B=F", "6C":"6C=F", "6E":"6E=F",
+    "6J":"6J=F", "6S":"6S=F", "6N":"6N=F", "6M":"6M=F",
 }
+
+# tick size (בערכים דצימליים). אם לא בטוח – תן None והצג ATR כ"נקודות".
+TICK = {
+    # indices
+    "ES":0.25, "MES":0.25, "NQ":0.25, "MNQ":0.25, "YM":1.0, "MYM":1.0,
+    "RTY":0.10, "M2K":0.10,
+
+    # metals/energy
+    "GC":0.10, "MGC":0.10, "SI":0.005, "SIL":0.005, "HG":0.0005, "MHG":0.0005,
+    "CL":0.01,  "MCL":0.01,  "NG":0.001, "MNG":0.001,
+    "RB":0.0001,"HO":0.0001, "PL":0.1,
+
+    # treasuries (קירוב סביר)
+    "ZT":0.0078125, "ZF":0.0078125, "ZN":0.015625, "TN":0.015625,
+    "ZB":0.03125,  "UB":0.03125,
+
+    # grains
+    "ZC":0.0025, "ZW":0.0025, "ZS":0.0025, "ZM":0.1, "ZL":0.0001,
+
+    # FX
+    "6A":0.0001,  "6B":0.0001,  "6C":0.00005, "6E":0.00005,
+    "6J":0.0000005,"6S":0.0001,  "6N":0.0001,  "6M":0.000005,
+}
+
 
 # גודל טיק להמרת ATR -> "Ticks/Pips" (בערך; העיקר שיהיה עקבי)
 TICK = {
