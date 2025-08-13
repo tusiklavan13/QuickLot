@@ -187,4 +187,8 @@ nav .navwrap{ display:flex; flex-wrap:wrap; gap:10px }
 .chartbox canvas{width:100%!important;height:100%!important}
 @media (max-width:600px){.chartbox{height:220px}}
 
+/* רווח בין שדה ה-Fee לכפתור Calculate */
+input[name="fee"] {
+    margin-bottom: 12px; /* אפשר לשנות את המספר */
+}
 
