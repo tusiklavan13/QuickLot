@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Market Table – QuickLot</title>
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
@@ -25,7 +25,6 @@
   <h1>Market Table</h1>
 
   <div class="card">
-    <!-- Toolbar -->
     <div class="toolbar">
       <div class="field">
         <label for="timeframe">View</label>
@@ -54,7 +53,6 @@
     </div>
     <div class="hr"></div>
 
-    <!-- Table (do NOT change these tags) -->
     <div class="table-scroll">
       <table class="table" id="marketTable">
         <thead>
@@ -72,84 +70,26 @@
     </div>
 
     <p class="subtle">Tip: Use the search box to quickly filter. Switch Daily/Hourly above. Data loads from <code>market.json</code>.</p>
-  </div><!-- /card -->
+  </div>
 
-  <!-- Volatility chart card (shows only when symbol selected & history exists) -->
+  <!-- כרטיס גרף עליון אופציונלי (כשנבחר סימבול מה-dropdown) -->
   <div id="volCard" class="card" style="display:none">
     <div class="header" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px">
-      <h3 id="volTitle" class="out" style="margin:0">Volatility</h3>
+      <h3 id="volTitle" style="margin:0">Volatility</h3>
       <span id="volUnit" class="badge">Pips/Ticks</span>
     </div>
     <canvas id="volChart"></canvas>
     <p class="subtle" id="volNote">Shows recent history if available.</p>
   </div>
-
-</div><!-- /container -->
+</div>
 
 <footer>© <span id="y"></span> QuickLot — For calculation purposes only. No financial advice.</footer>
 
-<!-- Chart.js for the volatility chart -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
-<script>
-// --- row chart under each table row ---
-window.ROW_CHARTS = new Map();
-
-window.wireRowClicks = function wireRowClicks(){
-  document.querySelectorAll('#marketTable tbody tr.data-row')
-    .forEach(tr => tr.onclick = () => window.toggleDetailRow(tr));
-};
-
-window.toggleDetailRow = function toggleDetailRow(tr){
-  const sym  = tr.dataset.sym;
-  const next = tr.nextElementSibling;
-
-  if (next && next.classList.contains('detail-row')){
-    const prev = window.ROW_CHARTS.get(sym);
-    if (prev){ prev.destroy(); window.ROW_CHARTS.delete(sym); }
-    next.remove();
-    return;
-  }
-
-  const detail = document.createElement('tr');
-  detail.className = 'detail-row';
-  detail.innerHTML = `<td colspan="6"><div class="chartbox">
-      <canvas id="rowchart-${sym}"></canvas></div></td>`;
-  tr.insertAdjacentElement('afterend', detail);
-
-  window.drawRowChart(sym, document.getElementById(`rowchart-${sym}`));
-};
-
-window.drawRowChart = function drawRowChart(sym, canvas){
-  const rows = window.VOL?.[sym];
-  if (!rows || rows.length < 2){
-    canvas.parentElement.innerHTML =
-      `<div class="subtle">No history found for <b>${sym}</b>.</div>`;
-    return;
-  }
-  const labels = rows.map(r => r[0]);
-  const data   = rows.map(r => r[1]);
-  const ctx    = canvas.getContext('2d');
-
-  const prev = window.ROW_CHARTS.get(sym);
-  if (prev){ prev.destroy(); }
-
-  const chart = new Chart(ctx,{
-    type:'line',
-    data:{ labels,
-      datasets:[{ label:'Pips/Ticks', data, tension:.25, borderWidth:2, pointRadius:0 }]},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:false }},
-      scales:{ x:{ ticks:{ maxTicksLimit:6 }}, y:{ beginAtZero:false }}
-    }
-  });
-
-  window.ROW_CHARTS.set(sym, chart);
-};
-</script>
 
 <script>
-// -------- Meta (names) + tick values (fallback for $) --------
+/* ======== CONFIG / STATE ======== */
 const SYMBOL_META = {
   MES:{name:"Micro E-mini S&P 500"},
   MNQ:{name:"Micro E-mini Nasdaq-100"},
@@ -160,9 +100,12 @@ const SYMBOL_META = {
 };
 const TICK_VALUE = { MES:1.25, MNQ:0.50, MYM:0.50, M2K:0.50, MGC:1.00, MCL:1.00 };
 
-// -------- State + helpers --------
-let DATA = { daily:{}, hourly:{} };
-const $ = s => document.querySelector(s);
+let DATA = { daily:{}, hourly:{} }; // from market.json
+let VOL  = {};                      // from market-history.json
+let CHART = null;                   // top card chart instance
+const ROW_CHARTS = new Map();       // sym -> Chart (row detail)
+
+const $        = s => document.querySelector(s);
 const tbody    = $('#marketTable tbody');
 const tfSel    = $('#timeframe');
 const symSel   = $('#symFilter');
@@ -170,99 +113,11 @@ const searchEl = $('#tblSearch');
 
 function fmtNum(v){
   return (v==null || !isFinite(v)) ? '—'
-    : (Math.abs(v)>=1000 ? v.toLocaleString(undefined,{maximumFractionDigits:2})
+    : (Math.abs(v)>=1000 ? Number(v).toLocaleString(undefined,{maximumFractionDigits:2})
                          : (+v).toFixed(3).replace(/\.?0+$/,''));
 }
 
-// ------- save / load prefs -------
-function savePrefs(){ try{
-  localStorage.setItem('quicklot:tblTF', tfSel.value);
-  localStorage.setItem('quicklot:tblQ',  searchEl.value);
-  localStorage.setItem('quicklot:tblSym', symSel.value);
-} catch(e){} }
-
-(function loadPrefs(){ try{
-  const tf  = localStorage.getItem('quicklot:tblTF');  if(tf)  tfSel.value = tf;
-  const q   = localStorage.getItem('quicklot:tblQ');   if(q)   searchEl.value = q;
-} catch(e){} })();
-
-// ------- build symbols dropdown -------
-function buildSymbolOptions(){
-  const prev = localStorage.getItem('quicklot:tblSym') || symSel.value || 'ALL';
-  const set = new Set();
-  if (DATA.daily)  Object.keys(DATA.daily).forEach(k => set.add(k));
-  if (DATA.hourly) Object.keys(DATA.hourly).forEach(k => set.add(k));
-  if (window.SYMBOL_META) Object.keys(SYMBOL_META).forEach(k => set.add(k));
-  const arr = [...set].sort();
-  symSel.innerHTML =
-    `<option value="ALL">All symbols</option>` +
-    arr.map(s => `<option value="${s}">${s}</option>`).join('');
-  if (prev && (prev==='ALL' || set.has(prev))) symSel.value = prev;
-}
-
-// ------- render table -------
-function render(){
-  const tf   = tfSel.value;                       // daily/hourly
-  const pick = symSel.value;                      // from "Symbol" dropdown
-  const q    = (searchEl.value||'').trim().toUpperCase();
-  const src  = DATA[tf] || {};
-
-  // רשימת הסימבולים להצגה (או ALL)
-  const keys = new Set(pick && pick !== 'ALL' ? [pick] : Object.keys(src));
-  // נוודא שגם כאלה שיש להם מטא יופיעו אם קיימים בנתונים
-  Object.keys(SYMBOL_META).forEach(k => keys.add(k));
-
-  const rows = [];
-  for (const sym of [...keys]) {
-    const rec = src[sym];
-    if (!rec) continue;
-
-    const name = (SYMBOL_META[sym]?.name) || sym;
-    if (q && !sym.includes(q) && !name.toUpperCase().includes(q)) continue;
-
-    const tv  = TICK_VALUE[sym];
-    const usd = (rec.usd != null) ? rec.usd : (isFinite(tv) ? rec.pips * tv : null);
-
-    rows.push({ sym, name, trend: rec.trend, pips: rec.pips, usd, pct: rec.pct });
-  }
-
-  rows.sort((a,b) => (b.pips||0) - (a.pips||0));
-
-  if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="subtle">No rows to show.</td></tr>`;
-  } else {
-    tbody.innerHTML = rows.map(r => {
-      const ttxt = r.trend === 'up'   ? '▲ up'
-                 : r.trend === 'down' ? '▼ down'
-                 : '—';
-      const tcls = r.trend === 'up'   ? 'good'
-                 : r.trend === 'down' ? 'bad'
-                 : '';
-
-      return `<tr class="data-row" data-sym="${r.sym}">
-        <td>${r.sym}</td>
-        <td>${r.name}</td>
-        <td class="${tcls}" style="text-align:right">${ttxt}</td>
-        <td style="text-align:right">${fmtNum(r.pips)}</td>
-        <td style="text-align:right">${r.usd!=null?('$'+fmtNum(r.usd)):'—'}</td>
-        <td style="text-align:right">${r.pct!=null?(fmtNum(r.pct)+'%'):'—'}</td>
-      </tr>`;
-      
-    }).join('');                 // <<< חשוב!
-  }
-function wireRowClicks() {
-    document.querySelectorAll('#marketTable tbody tr.data-row').forEach(row => {
-        row.addEventListener('click', () => {
-            toggleDetailRow(row);
-        });
-    });
-}
-
-  wireRowClicks && wireRowClicks(); // <<< אחרי שמילאנו את ה-tbody
-  savePrefs();
-}
-
-// ------- load market.json -------
+/* ======== LOADERS ======== */
 async function loadData(){
   tbody.innerHTML = `<tr><td colspan="6" class="subtle">Loading market.json…</td></tr>`;
   try{
@@ -278,35 +133,138 @@ async function loadData(){
   render();
 }
 
-// ------- events -------
-tfSel.addEventListener('change', render);
-symSel.addEventListener('change', render);
-let tt; searchEl.addEventListener('input', ()=>{ clearTimeout(tt); tt=setTimeout(render,120); });
-document.getElementById('refreshBtn').addEventListener('click', loadData);
-
-// ------- init -------
-loadData();
-document.getElementById('y').textContent=new Date().getFullYear();
-</script>
-
-<!-- Volatility chart logic -->
-<script>
 async function loadHistory(){
   try{
-    const res = await fetch('market-history.json?v=' + Date.now(), {cache:'no-cache'});
-    if(res.ok) VOL = await res.json();
-  }catch(e){ VOL = {}; }
+    const res = await fetch('market-history.json?v='+Date.now(), {cache:'no-cache'});
+    if(res.ok) VOL = await res.json(); else VOL = {};
+  }catch(_){ VOL = {}; }
 }
-function hideVol(){ document.getElementById('volCard').style.display='none'; }
-function showVol(){ document.getElementById('volCard').style.display='block'; }
+
+/* ======== UI BUILD ======== */
+function buildSymbolOptions(){
+  const prev = localStorage.getItem('quicklot:tblSym') || 'ALL';
+  const set = new Set();
+  Object.keys(DATA.daily||{}).forEach(k=>set.add(k));
+  Object.keys(DATA.hourly||{}).forEach(k=>set.add(k));
+  Object.keys(SYMBOL_META).forEach(k=>set.add(k));
+  const arr = [...set].sort();
+  symSel.innerHTML = `<option value="ALL">All symbols</option>` + arr.map(s=>`<option value="${s}">${s}</option>`).join('');
+  if (prev && (prev==='ALL' || set.has(prev))) symSel.value = prev;
+}
+
+function render(){
+  const tf   = tfSel.value;
+  const pick = symSel.value;
+  const q    = (searchEl.value||'').trim().toUpperCase();
+  const src  = DATA[tf] || {};
+
+  const keys = new Set(pick && pick!=='ALL' ? [pick] : Object.keys(src));
+  const rows=[];
+  for(const sym of [...keys]){
+    const rec = src[sym];
+    if(!rec) continue;
+    const name = (SYMBOL_META[sym]?.name) || sym;
+    if(q && !sym.includes(q) && !name.toUpperCase().includes(q)) continue;
+    const tv  = TICK_VALUE[sym];
+    const usd = (rec.usd!=null) ? rec.usd : (isFinite(tv) ? rec.pips*tv : null);
+    rows.push({sym, name, trend:rec.trend, pips:rec.pips, usd, pct:rec.pct});
+  }
+
+  rows.sort((a,b)=>(b.pips||0)-(a.pips||0));
+
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="6" class="subtle">No rows to show.</td></tr>`;
+  }else{
+    tbody.innerHTML = rows.map(r=>{
+      const ttxt = r.trend==='up'?'▲ up' : r.trend==='down'?'▼ down' : '—';
+      const tcls = r.trend==='up'?'good' : r.trend==='down'?'bad' : '';
+      return `<tr class="data-row" data-sym="${r.sym}">
+        <td>${r.sym}</td>
+        <td>${r.name}</td>
+        <td class="${tcls}" style="text-align:right">${ttxt}</td>
+        <td style="text-align:right">${fmtNum(r.pips)}</td>
+        <td style="text-align:right">${r.usd!=null?('$'+fmtNum(r.usd)):'—'}</td>
+        <td style="text-align:right">${r.pct!=null?(fmtNum(r.pct)+'%'):'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  wireRowClicks();
+  savePrefs();
+}
+
+function savePrefs(){ try{
+  localStorage.setItem('quicklot:tblTF', tfSel.value);
+  localStorage.setItem('quicklot:tblQ',  searchEl.value);
+  localStorage.setItem('quicklot:tblSym', symSel.value);
+} catch(e){} }
+
+(function loadPrefs(){ try{
+  const tf  = localStorage.getItem('quicklot:tblTF');  if(tf)  tfSel.value = tf;
+  const q   = localStorage.getItem('quicklot:tblQ');   if(q)   searchEl.value = q;
+} catch(e){} })();
+
+/* ======== ROW DETAIL CHARTS (under each row) ======== */
+function wireRowClicks(){
+  document.querySelectorAll('#marketTable tbody tr.data-row')
+    .forEach(tr => tr.onclick = ()=> toggleDetailRow(tr));
+}
+
+function toggleDetailRow(tr){
+  const sym  = tr.dataset.sym;
+  const next = tr.nextElementSibling;
+
+  if (next && next.classList.contains('detail-row')){
+    const prev = ROW_CHARTS.get(sym);
+    if (prev){ prev.destroy(); ROW_CHARTS.delete(sym); }
+    next.remove();
+    return;
+  }
+
+  const detail = document.createElement('tr');
+  detail.className = 'detail-row';
+  detail.innerHTML = `<td colspan="6"><div class="chartbox"><canvas id="rowchart-${sym}"></canvas></div></td>`;
+  tr.insertAdjacentElement('afterend', detail);
+
+  drawRowChart(sym, document.getElementById(`rowchart-${sym}`));
+}
+
+function drawRowChart(sym, canvas){
+  const rows = VOL[sym];
+  if (!rows || rows.length < 2){
+    canvas.parentElement.innerHTML = `<div class="subtle">No history found for <b>${sym}</b>.</div>`;
+    return;
+  }
+  const labels = rows.map(r=>r[0]);
+  const data   = rows.map(r=>r[1]);
+  const ctx    = canvas.getContext('2d');
+
+  const prev = ROW_CHARTS.get(sym);
+  if (prev){ prev.destroy(); }
+
+  const chart = new Chart(ctx,{
+    type:'line',
+    data:{ labels, datasets:[{ label:'Pips/Ticks', data, tension:.25, borderWidth:2, pointRadius:0 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ ticks:{ maxTicksLimit:6 } }, y:{ beginAtZero:false } }
+    }
+  });
+  ROW_CHARTS.set(sym, chart);
+}
+
+/* ======== TOP VOL CARD (optional on symbol select) ======== */
+function hideVol(){ $('#volCard').style.display='none'; }
+function showVol(){ $('#volCard').style.display='block'; }
 
 function drawVolChart(sym){
   const rows = VOL[sym];
   if(!rows || rows.length<2){ hideVol(); return; }
   const labels = rows.map(r=>r[0]);
   const data   = rows.map(r=>r[1]);
-  document.getElementById('volTitle').textContent = `Volatility – ${sym}`;
-  const ctx = document.getElementById('volChart').getContext('2d');
+  $('#volTitle').textContent = `Volatility – ${sym}`;
+  const ctx = $('#volChart').getContext('2d');
   if (CHART) CHART.destroy();
   CHART = new Chart(ctx, {
     type:'line',
@@ -318,137 +276,23 @@ function drawVolChart(sym){
   });
   showVol();
 }
+
+/* ======== EVENTS / INIT ======== */
+let t; searchEl.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(render,120); });
+tfSel.addEventListener('change', render);
 symSel.addEventListener('change', ()=>{
+  render();
   const v = symSel.value;
-  if(v && v!=='ALL') drawVolChart(v); else hideVol();
+  if (v && v!=='ALL') drawVolChart(v); else hideVol();
 });
-loadHistory().then(()=>{ const v = symSel.value; if(v && v!=='ALL') drawVolChart(v); });
-</script>
-  <script>
-/* --- row charts under table --- */
-const ROW_CHARTS = new Map();
+$('#refreshBtn').addEventListener('click', loadData);
 
-function wireRowClicks(){
-  document.querySelectorAll('#marketTable tbody tr.data-row')
-    .forEach(tr => tr.onclick = ()=> toggleDetailRow(tr));
-}
+document.getElementById('y').textContent=new Date().getFullYear();
 
-function toggleDetailRow(tr){
-  const sym  = tr.dataset.sym;
-  const next = tr.nextElementSibling;
-
-  // סגירה אם כבר פתוח
-  if (next && next.classList.contains('detail-row')){
-    const prev = ROW_CHARTS.get(sym);
-    if (prev){ prev.destroy(); ROW_CHARTS.delete(sym); }
-    next.remove();
-    return;
-  }
-
-  // פתיחה
-  const detail = document.createElement('tr');
-  detail.className = 'detail-row';
-  detail.innerHTML = `<td colspan="6"><div class="chartbox">
-      <canvas id="rowchart-${sym}"></canvas></div></td>`;
-  tr.insertAdjacentElement('afterend', detail);
-
-  drawRowChart(sym, document.getElementById(`rowchart-${sym}`));
-}
-
-function drawRowChart(sym, canvas){
-  // משתמשים ב-VOL הקיים ש-loadHistory() מילא
-  const rows = VOL[sym];
-  if (!rows || rows.length < 2){
-    canvas.parentElement.innerHTML =
-      `<div class="subtle">No history found for <b>${sym}</b>.</div>`;
-    return;
-  }
-
-  const labels = rows.map(r=>r[0]);
-  const data   = rows.map(r=>r[1]);
-  const ctx    = canvas.getContext('2d');
-
-  const prev = ROW_CHARTS.get(sym);
-  if (prev){ prev.destroy(); }
-
-  const chart = new Chart(ctx,{
-    type:'line',
-    data:{ labels,
-      datasets:[{ label:'Pips/Ticks', data, tension:.25, borderWidth:2, pointRadius:0 }] },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:false } },
-      scales:{ x:{ ticks:{ maxTicksLimit:6 } }, y:{ beginAtZero:false } }
-    }
-  });
-  ROW_CHARTS.set(sym, chart);
-}
-</script>
-
-<script>
-// נטען היסטוריה פעם אחת מהקובץ market-history.json
-let VOL = {}, CHART = null;
-
-async function loadHistory(){
-  try{
-    const res = await fetch('market-history.json?v=' + Date.now(), {cache:'no-cache'});
-    if(res.ok) VOL = await res.json();
-  }catch(e){ VOL = {}; }
-}
-loadHistory();
-
-// מצייר גרף בתוך שורת הפירוט
-function drawRowChart(sym, canvas){
-  const rows = VOL[sym];
-  if(!rows || rows.length < 2){
-    canvas.parentElement.innerHTML = `<div class="subtle">No history found for <b>${sym}</b>.</div>`;
-    return;
-  }
-  const ctx = canvas.getContext('2d');
-  const labels = rows.map(r=>r[0]);
-  const data   = rows.map(r=>r[1]);
-
-  if(ROW_CHARTS.has(sym)){ ROW_CHARTS.get(sym).destroy(); ROW_CHARTS.delete(sym); }
-
-  const chart = new Chart(ctx, {
-    type:'line',
-    data:{ labels, datasets:[{ label:'Pips/Ticks', data, tension:.25, borderWidth:2, pointRadius:0 }] },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      scales:{ x:{ ticks:{ maxTicksLimit:6 } }, y:{ beginAtZero:false } },
-      plugins:{ legend:{ display:false } }
-    }
-  });
-  ROW_CHARTS.set(sym, chart);
-}
-
-// פותח/סוגר שורת פירוט מתחת לרו
-function toggleDetailRow(tr){
-  const sym  = tr.dataset.sym;
-  const next = tr.nextElementSibling;
-
-  // אם כבר פתוח — נסגור ונשמיד גרף
-  if(next && next.classList.contains('detail-row')){
-    if(ROW_CHARTS.has(sym)){ ROW_CHARTS.get(sym).destroy(); ROW_CHARTS.delete(sym); }
-    next.remove();
-    return;
-  }
-
-  // נפתח חדשה
-  const detail = document.createElement('tr');
-  detail.className = 'detail-row';
-  detail.innerHTML = `<td colspan="6"><div class="chartbox"><canvas id="rowchart-${sym}"></canvas></div></td>`;
-  tr.insertAdjacentElement('afterend', detail);
-
-  const canvas = document.getElementById(`rowchart-${sym}`);
-  drawRowChart(sym, canvas);
-}
-
-// מחבר מאזיני־קליק לכל השורות שנבנו עכשיו
-function wireRowClicks(){
-  document.querySelectorAll('#marketTable tbody tr.data-row')
-    .forEach(tr => tr.onclick = ()=> toggleDetailRow(tr));
-}
+(async ()=>{
+  await loadHistory();  // אם אין market-history.json זה פשוט יתעלם
+  await loadData();     // טוען market.json ומצייר את הטבלה
+})();
 </script>
 
 <!-- nav hamburger -->
