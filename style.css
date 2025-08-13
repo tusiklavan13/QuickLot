@@ -101,6 +101,10 @@ nav a.active{
   .btn{ width:100% }
 }
 /* ===== Mobile polish (add at the end of style.css) ===== */
+/* רווח קטן בין שורת ה-fee לכפתור */
+#calcBtn { 
+  margin-top: 10px;
+}
 
 /* גלילה רוחבית נוחה בטבלאות בנייד */
 .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch }
