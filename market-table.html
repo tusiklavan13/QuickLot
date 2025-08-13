@@ -90,6 +90,63 @@
 
 <!-- Chart.js for the volatility chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
+<script>
+// --- row chart under each table row ---
+window.ROW_CHARTS = new Map();
+
+window.wireRowClicks = function wireRowClicks(){
+  document.querySelectorAll('#marketTable tbody tr.data-row')
+    .forEach(tr => tr.onclick = () => window.toggleDetailRow(tr));
+};
+
+window.toggleDetailRow = function toggleDetailRow(tr){
+  const sym  = tr.dataset.sym;
+  const next = tr.nextElementSibling;
+
+  if (next && next.classList.contains('detail-row')){
+    const prev = window.ROW_CHARTS.get(sym);
+    if (prev){ prev.destroy(); window.ROW_CHARTS.delete(sym); }
+    next.remove();
+    return;
+  }
+
+  const detail = document.createElement('tr');
+  detail.className = 'detail-row';
+  detail.innerHTML = `<td colspan="6"><div class="chartbox">
+      <canvas id="rowchart-${sym}"></canvas></div></td>`;
+  tr.insertAdjacentElement('afterend', detail);
+
+  window.drawRowChart(sym, document.getElementById(`rowchart-${sym}`));
+};
+
+window.drawRowChart = function drawRowChart(sym, canvas){
+  const rows = window.VOL?.[sym];
+  if (!rows || rows.length < 2){
+    canvas.parentElement.innerHTML =
+      `<div class="subtle">No history found for <b>${sym}</b>.</div>`;
+    return;
+  }
+  const labels = rows.map(r => r[0]);
+  const data   = rows.map(r => r[1]);
+  const ctx    = canvas.getContext('2d');
+
+  const prev = window.ROW_CHARTS.get(sym);
+  if (prev){ prev.destroy(); }
+
+  const chart = new Chart(ctx,{
+    type:'line',
+    data:{ labels,
+      datasets:[{ label:'Pips/Ticks', data, tension:.25, borderWidth:2, pointRadius:0 }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }},
+      scales:{ x:{ ticks:{ maxTicksLimit:6 }}, y:{ beginAtZero:false }}
+    }
+  });
+
+  window.ROW_CHARTS.set(sym, chart);
+};
+</script>
 
 <script>
 // -------- Meta (names) + tick values (fallback for $) --------
@@ -190,8 +247,16 @@ function render(){
         <td style="text-align:right">${r.usd!=null?('$'+fmtNum(r.usd)):'—'}</td>
         <td style="text-align:right">${r.pct!=null?(fmtNum(r.pct)+'%'):'—'}</td>
       </tr>`;
+      
     }).join('');                 // <<< חשוב!
   }
+function wireRowClicks() {
+    document.querySelectorAll('#marketTable tbody tr.data-row').forEach(row => {
+        row.addEventListener('click', () => {
+            toggleDetailRow(row);
+        });
+    });
+}
 
   wireRowClicks && wireRowClicks(); // <<< אחרי שמילאנו את ה-tbody
   savePrefs();
@@ -322,7 +387,7 @@ function drawRowChart(sym, canvas){
 
 <script>
 // נטען היסטוריה פעם אחת מהקובץ market-history.json
-let VOL = {}, ROW_CHARTS = new Map(); // sym -> Chart instance
+let VOL = {}, CHART = null;
 
 async function loadHistory(){
   try{
