@@ -2,489 +2,489 @@
   "daily": {
     "MES": {
       "trend": "up",
-      "pips": 324.71,
+      "pips": 328.93,
       "usd": null,
-      "pct": 0.09
+      "pct": 0.65
     },
     "MNQ": {
-      "trend": "down",
-      "pips": 1756.07,
+      "trend": "up",
+      "pips": 1788.0,
       "usd": null,
-      "pct": -0.31
+      "pct": 1.07
     },
     "MYM": {
       "trend": "up",
-      "pips": 523.07,
+      "pips": 504.36,
       "usd": null,
-      "pct": 0.12
+      "pct": 0.23
     },
     "M2K": {
       "trend": "up",
-      "pips": 498.71,
+      "pips": 489.64,
       "usd": null,
-      "pct": 0.54
+      "pct": 0.64
     },
     "MGC": {
       "trend": "up",
-      "pips": 845.07,
+      "pips": 712.14,
       "usd": null,
-      "pct": 0.49
+      "pct": 1.36
     },
     "SIL": {
       "trend": "up",
-      "pips": 226.67,
+      "pips": 193.87,
       "usd": null,
-      "pct": 0.47
+      "pct": 2.15
     },
     "MHG": {
-      "trend": "down",
-      "pips": 149.64,
+      "trend": "up",
+      "pips": 152.0,
       "usd": null,
-      "pct": -0.15
+      "pct": 1.84
     },
     "MCL": {
       "trend": "up",
-      "pips": 160.36,
+      "pips": 154.79,
       "usd": null,
       "pct": 0.54
     },
     "MNG": {
-      "trend": "flat",
-      "pips": null,
+      "trend": "up",
+      "pips": 231.36,
       "usd": null,
-      "pct": null
+      "pct": 3.11
     },
     "ES": {
       "trend": "up",
-      "pips": 324.71,
+      "pips": 328.93,
       "usd": null,
-      "pct": 0.09
+      "pct": 0.65
     },
     "NQ": {
-      "trend": "down",
-      "pips": 1756.07,
+      "trend": "up",
+      "pips": 1788.0,
       "usd": null,
-      "pct": -0.31
+      "pct": 1.07
     },
     "YM": {
       "trend": "up",
-      "pips": 523.07,
+      "pips": 504.36,
       "usd": null,
-      "pct": 0.12
+      "pct": 0.23
     },
     "RTY": {
       "trend": "up",
-      "pips": 498.71,
+      "pips": 489.64,
       "usd": null,
-      "pct": 0.54
+      "pct": 0.64
     },
     "GC": {
       "trend": "up",
-      "pips": 845.07,
+      "pips": 712.14,
       "usd": null,
-      "pct": 0.49
+      "pct": 1.36
     },
     "SI": {
       "trend": "up",
-      "pips": 226.67,
+      "pips": 193.87,
       "usd": null,
-      "pct": 0.47
+      "pct": 2.15
     },
     "HG": {
-      "trend": "down",
-      "pips": 149.64,
+      "trend": "up",
+      "pips": 152.0,
       "usd": null,
-      "pct": -0.15
+      "pct": 1.84
     },
     "CL": {
       "trend": "up",
-      "pips": 160.36,
+      "pips": 154.79,
       "usd": null,
       "pct": 0.54
     },
     "NG": {
-      "trend": "flat",
-      "pips": null,
+      "trend": "up",
+      "pips": 231.36,
       "usd": null,
-      "pct": null
+      "pct": 3.11
     },
     "RB": {
-      "trend": "down",
-      "pips": 525.29,
+      "trend": "up",
+      "pips": 534.71,
       "usd": null,
-      "pct": -1.29
+      "pct": 0.68
     },
     "HO": {
-      "trend": "down",
-      "pips": 793.5,
-      "usd": null,
-      "pct": -0.56
-    },
-    "PL": {
       "trend": "up",
-      "pips": 302.0,
-      "usd": null,
-      "pct": 0.72
-    },
-    "ZT": {
-      "trend": "flat",
-      "pips": 13.93,
-      "usd": null,
-      "pct": 0.01
-    },
-    "ZF": {
-      "trend": "flat",
-      "pips": 34.93,
-      "usd": null,
-      "pct": 0.03
-    },
-    "ZN": {
-      "trend": "flat",
-      "pips": 27.43,
-      "usd": null,
-      "pct": 0.03
-    },
-    "ZB": {
-      "trend": "down",
-      "pips": 27.07,
-      "usd": null,
-      "pct": -0.13
-    },
-    "UB": {
-      "trend": "down",
-      "pips": 36.14,
-      "usd": null,
-      "pct": -0.18
-    },
-    "TN": {
-      "trend": "flat",
-      "pips": 34.57,
-      "usd": null,
-      "pct": 0.0
-    },
-    "ZC": {
-      "trend": "down",
-      "pips": 26.29,
-      "usd": null,
-      "pct": -0.35
-    },
-    "ZW": {
-      "trend": "down",
-      "pips": 47.21,
-      "usd": null,
-      "pct": -1.45
-    },
-    "ZS": {
-      "trend": "up",
-      "pips": 75.57,
-      "usd": null,
-      "pct": 0.92
-    },
-    "ZM": {
-      "trend": "up",
-      "pips": 76.07,
-      "usd": null,
-      "pct": 1.41
-    },
-    "ZL": {
-      "trend": "up",
-      "pips": 97.14,
-      "usd": null,
-      "pct": 0.67
-    },
-    "6A": {
-      "trend": "up",
-      "pips": 41.54,
+      "pips": 781.64,
       "usd": null,
       "pct": 0.17
     },
-    "6B": {
+    "PL": {
       "trend": "up",
-      "pips": 75.5,
+      "pips": 239.93,
       "usd": null,
-      "pct": 0.2
+      "pct": 2.53
+    },
+    "ZT": {
+      "trend": "down",
+      "pips": 14.0,
+      "usd": null,
+      "pct": -0.06
+    },
+    "ZF": {
+      "trend": "down",
+      "pips": 34.79,
+      "usd": null,
+      "pct": -0.14
+    },
+    "ZN": {
+      "trend": "down",
+      "pips": 27.07,
+      "usd": null,
+      "pct": -0.21
+    },
+    "ZB": {
+      "trend": "down",
+      "pips": 26.64,
+      "usd": null,
+      "pct": -0.37
+    },
+    "UB": {
+      "trend": "down",
+      "pips": 35.57,
+      "usd": null,
+      "pct": -0.47
+    },
+    "TN": {
+      "trend": "down",
+      "pips": 34.29,
+      "usd": null,
+      "pct": -0.27
+    },
+    "ZC": {
+      "trend": "up",
+      "pips": 25.14,
+      "usd": null,
+      "pct": 0.18
+    },
+    "ZW": {
+      "trend": "up",
+      "pips": 45.64,
+      "usd": null,
+      "pct": 0.19
+    },
+    "ZS": {
+      "trend": "up",
+      "pips": 79.29,
+      "usd": null,
+      "pct": 1.66
+    },
+    "ZM": {
+      "trend": "down",
+      "pips": 75.0,
+      "usd": null,
+      "pct": -0.09
+    },
+    "ZL": {
+      "trend": "flat",
+      "pips": 92.79,
+      "usd": null,
+      "pct": 0.0
+    },
+    "6A": {
+      "trend": "up",
+      "pips": 40.29,
+      "usd": null,
+      "pct": 0.42
+    },
+    "6B": {
+      "trend": "down",
+      "pips": 73.5,
+      "usd": null,
+      "pct": -0.05
     },
     "6C": {
       "trend": "up",
-      "pips": 49.07,
+      "pips": 48.79,
       "usd": null,
-      "pct": 0.51
+      "pct": 0.21
     },
     "6E": {
       "trend": "up",
-      "pips": 98.57,
+      "pips": 94.64,
       "usd": null,
-      "pct": 0.12
+      "pct": 0.15
     },
     "6J": {
-      "trend": "down",
-      "pips": 82.14,
+      "trend": "up",
+      "pips": 77.5,
       "usd": null,
-      "pct": -0.29
+      "pct": 0.08
     },
     "6S": {
-      "trend": "up",
-      "pips": 73.64,
+      "trend": "down",
+      "pips": 69.79,
       "usd": null,
-      "pct": 0.1
+      "pct": -0.06
     },
     "6N": {
-      "trend": "down",
-      "pips": 43.32,
+      "trend": "up",
+      "pips": 41.21,
       "usd": null,
-      "pct": -0.19
+      "pct": 0.11
     },
     "6M": {
-      "trend": "up",
-      "pips": 1.93,
+      "trend": "down",
+      "pips": 1.99,
       "usd": null,
-      "pct": 0.63
+      "pct": -0.13
     }
   },
   "hourly": {
     "MES": {
       "trend": "flat",
-      "pips": 108.5,
-      "usd": null,
-      "pct": 0.0
-    },
-    "MNQ": {
-      "trend": "flat",
-      "pips": 543.36,
+      "pips": 106.0,
       "usd": null,
       "pct": 0.01
     },
+    "MNQ": {
+      "trend": "flat",
+      "pips": 547.71,
+      "usd": null,
+      "pct": 0.02
+    },
     "MYM": {
       "trend": "flat",
-      "pips": 145.29,
+      "pips": 139.21,
       "usd": null,
       "pct": 0.01
     },
     "M2K": {
       "trend": "flat",
-      "pips": 135.79,
+      "pips": 132.36,
       "usd": null,
-      "pct": 0.01
+      "pct": -0.01
     },
     "MGC": {
-      "trend": "down",
-      "pips": 146.79,
+      "trend": "flat",
+      "pips": 166.21,
       "usd": null,
-      "pct": -0.06
+      "pct": 0.02
     },
     "SIL": {
-      "trend": "down",
-      "pips": 61.31,
+      "trend": "flat",
+      "pips": 72.24,
       "usd": null,
-      "pct": -0.3
+      "pct": -0.02
     },
     "MHG": {
-      "trend": "flat",
-      "pips": 36.5,
+      "trend": "up",
+      "pips": 38.29,
       "usd": null,
-      "pct": 0.0
+      "pct": 0.11
     },
     "MCL": {
-      "trend": "down",
-      "pips": 31.71,
+      "trend": "flat",
+      "pips": 28.0,
       "usd": null,
-      "pct": -0.1
+      "pct": -0.02
     },
     "MNG": {
-      "trend": "flat",
-      "pips": null,
+      "trend": "up",
+      "pips": 53.21,
       "usd": null,
-      "pct": null
+      "pct": 0.09
     },
     "ES": {
       "trend": "flat",
-      "pips": 108.5,
-      "usd": null,
-      "pct": 0.0
-    },
-    "NQ": {
-      "trend": "flat",
-      "pips": 543.36,
+      "pips": 106.0,
       "usd": null,
       "pct": 0.01
     },
+    "NQ": {
+      "trend": "flat",
+      "pips": 547.71,
+      "usd": null,
+      "pct": 0.02
+    },
     "YM": {
       "trend": "flat",
-      "pips": 145.29,
+      "pips": 139.21,
       "usd": null,
       "pct": 0.01
     },
     "RTY": {
       "trend": "flat",
-      "pips": 135.79,
+      "pips": 132.36,
       "usd": null,
-      "pct": 0.01
+      "pct": -0.01
     },
     "GC": {
-      "trend": "down",
-      "pips": 146.79,
+      "trend": "flat",
+      "pips": 166.21,
       "usd": null,
-      "pct": -0.06
+      "pct": 0.02
     },
     "SI": {
-      "trend": "down",
-      "pips": 61.31,
+      "trend": "flat",
+      "pips": 72.24,
       "usd": null,
-      "pct": -0.3
+      "pct": -0.02
     },
     "HG": {
-      "trend": "flat",
-      "pips": 36.5,
+      "trend": "up",
+      "pips": 38.29,
       "usd": null,
-      "pct": 0.0
+      "pct": 0.11
     },
     "CL": {
-      "trend": "down",
-      "pips": 31.71,
+      "trend": "flat",
+      "pips": 28.0,
       "usd": null,
-      "pct": -0.1
+      "pct": -0.02
     },
     "NG": {
-      "trend": "flat",
-      "pips": null,
-      "usd": null,
-      "pct": null
-    },
-    "RB": {
       "trend": "up",
-      "pips": 122.64,
-      "usd": null,
-      "pct": 0.06
-    },
-    "HO": {
-      "trend": "up",
-      "pips": 206.86,
+      "pips": 53.21,
       "usd": null,
       "pct": 0.09
     },
-    "PL": {
+    "RB": {
       "trend": "down",
-      "pips": 128.57,
+      "pips": 680.86,
       "usd": null,
-      "pct": -0.37
+      "pct": -0.06
+    },
+    "HO": {
+      "trend": "down",
+      "pips": 727.07,
+      "usd": null,
+      "pct": -0.12
+    },
+    "PL": {
+      "trend": "up",
+      "pips": 128.71,
+      "usd": null,
+      "pct": 0.13
     },
     "ZT": {
       "trend": "flat",
-      "pips": 3.82,
+      "pips": 3.96,
       "usd": null,
-      "pct": 0.0
+      "pct": -0.01
     },
     "ZF": {
       "trend": "flat",
-      "pips": 9.14,
+      "pips": 9.5,
       "usd": null,
       "pct": -0.01
     },
     "ZN": {
       "trend": "flat",
-      "pips": 7.14,
-      "usd": null,
-      "pct": 0.0
-    },
-    "ZB": {
-      "trend": "flat",
-      "pips": 6.36,
+      "pips": 7.36,
       "usd": null,
       "pct": -0.03
     },
+    "ZB": {
+      "trend": "down",
+      "pips": 6.79,
+      "usd": null,
+      "pct": -0.05
+    },
     "UB": {
       "trend": "down",
-      "pips": 7.86,
+      "pips": 8.29,
       "usd": null,
       "pct": -0.05
     },
     "TN": {
       "trend": "flat",
-      "pips": 8.29,
+      "pips": 8.79,
       "usd": null,
       "pct": -0.03
     },
     "ZC": {
-      "trend": "down",
-      "pips": 4.86,
+      "trend": "up",
+      "pips": 5.21,
       "usd": null,
-      "pct": -0.12
+      "pct": 0.06
     },
     "ZW": {
-      "trend": "flat",
-      "pips": 10.07,
-      "usd": null,
-      "pct": 0.0
-    },
-    "ZS": {
-      "trend": "flat",
-      "pips": 40.14,
-      "usd": null,
-      "pct": 0.0
-    },
-    "ZM": {
-      "trend": "flat",
-      "pips": 15.5,
-      "usd": null,
-      "pct": 0.03
-    },
-    "ZL": {
       "trend": "down",
-      "pips": 29.43,
-      "usd": null,
-      "pct": -0.1
-    },
-    "6A": {
-      "trend": "flat",
-      "pips": 11.18,
-      "usd": null,
-      "pct": -0.05
-    },
-    "6B": {
-      "trend": "flat",
-      "pips": 17.57,
-      "usd": null,
-      "pct": -0.05
-    },
-    "6C": {
-      "trend": "down",
-      "pips": 17.29,
-      "usd": null,
-      "pct": -0.06
-    },
-    "6E": {
-      "trend": "flat",
-      "pips": 25.14,
-      "usd": null,
-      "pct": -0.04
-    },
-    "6J": {
-      "trend": "down",
-      "pips": 20.07,
+      "pips": 10.64,
       "usd": null,
       "pct": -0.09
     },
-    "6S": {
+    "ZS": {
       "trend": "down",
-      "pips": 17.32,
+      "pips": 15.71,
       "usd": null,
-      "pct": -0.07
+      "pct": -0.11
+    },
+    "ZM": {
+      "trend": "down",
+      "pips": 17.0,
+      "usd": null,
+      "pct": -0.09
+    },
+    "ZL": {
+      "trend": "down",
+      "pips": 30.71,
+      "usd": null,
+      "pct": -0.2
+    },
+    "6A": {
+      "trend": "flat",
+      "pips": 11.96,
+      "usd": null,
+      "pct": 0.05
+    },
+    "6B": {
+      "trend": "flat",
+      "pips": 16.5,
+      "usd": null,
+      "pct": 0.0
+    },
+    "6C": {
+      "trend": "flat",
+      "pips": 17.93,
+      "usd": null,
+      "pct": 0.01
+    },
+    "6E": {
+      "trend": "flat",
+      "pips": 26.57,
+      "usd": null,
+      "pct": 0.01
+    },
+    "6J": {
+      "trend": "flat",
+      "pips": 21.86,
+      "usd": null,
+      "pct": -0.02
+    },
+    "6S": {
+      "trend": "flat",
+      "pips": 16.5,
+      "usd": null,
+      "pct": 0.04
     },
     "6N": {
-      "trend": "down",
-      "pips": 9.11,
+      "trend": "up",
+      "pips": 9.0,
       "usd": null,
-      "pct": -0.1
+      "pct": 0.06
     },
     "6M": {
       "trend": "flat",
-      "pips": 0.79,
+      "pips": 0.75,
       "usd": null,
-      "pct": 0.0
+      "pct": 0.02
     }
   },
   "_meta": {
-    "updated_utc": "2025-11-09T02:50:03.372273Z",
+    "updated_utc": "2025-11-10T02:54:51.925743Z",
     "source": "Yahoo Finance via yfinance",
     "atr_period": 14
   }
