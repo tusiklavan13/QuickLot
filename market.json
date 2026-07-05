@@ -164,33 +164,33 @@
     },
     "ZC": {
       "trend": "up",
-      "pips": 37.14,
+      "pips": 42.21,
       "usd": null,
-      "pct": 0.95
+      "pct": 4.69
     },
     "ZW": {
-      "trend": "down",
-      "pips": 64.86,
+      "trend": "up",
+      "pips": 66.93,
       "usd": null,
-      "pct": -0.25
+      "pct": 1.39
     },
     "ZS": {
       "trend": "up",
-      "pips": 68.36,
+      "pips": 74.79,
       "usd": null,
-      "pct": 0.49
+      "pct": 1.82
     },
     "ZM": {
-      "trend": "up",
-      "pips": 46.43,
+      "trend": "down",
+      "pips": 46.57,
       "usd": null,
-      "pct": 0.36
+      "pct": -0.72
     },
     "ZL": {
       "trend": "down",
-      "pips": 209.71,
+      "pips": 216.21,
       "usd": null,
-      "pct": -0.1
+      "pct": -2.18
     },
     "6A": {
       "trend": "up",
@@ -484,7 +484,7 @@
     }
   },
   "_meta": {
-    "updated_utc": "2026-07-04T04:47:42.387419Z",
+    "updated_utc": "2026-07-05T05:06:57.867011Z",
     "source": "Yahoo Finance via yfinance",
     "atr_period": 14
   }
